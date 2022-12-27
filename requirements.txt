@@ -1,0 +1,13 @@
+streamlit
+pandas
+pymorphy2
+gensim 
+numpy
+matplotlib
+nltk
+pillow
+openpyxl
+
+telethon
+datetime
+asyncio
