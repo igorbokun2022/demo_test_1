@@ -13,6 +13,7 @@ import asyncio
 import datetime
 from telethon import TelegramClient
 
+from multiapp import MultiApp
 
 cl_mas_data=[]
 cl_mas_date=[]
@@ -71,7 +72,7 @@ async def work():
     await client.disconnect()
     '''
     #*************************************
-    df = pd.read_excel('postnews1.xlsx')
+    df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
     df.columns=['A']
     cl_mas_data = list(df['A'])
     st.text("принято сообщений канала - "+str(len(cl_mas_data)))
@@ -161,7 +162,7 @@ class LDA(object):
                 list_posts.append(word+' ==> '+str(round(float(weight) * 100,2) + 1%1)+'('+str(lst_frm[ind_word][int(item[0]+1)])+')')
                 cur_wrd.append(word)
                 
-            self.gr_wrd.append(cur_wrd)
+            self.gr_wrd.append(cur_wrd[1:len(cur_wrd)-1])
         
         #*****************************************************
         
@@ -243,7 +244,7 @@ class Prepare(object):
         #new_word=re.sub(self.patterns, ' ', new_word) 
         #new_word=new_word.translate(new_word,self.patterns)
         new_word=new_word.lower()
-        #word=stemmer.stem(word) 
+        new_word=stemmer.stem(new_word) 
         
         if new_word not in self.ru_stopwords and new_word not in self.del_words:  
             if len(new_word)>3:
@@ -353,56 +354,112 @@ def start_corpus(mas_data, minf, maxf):
 
 #**************************************************************
 
-st.header('web-сервис: тематичеcкий анализ контента телеграм-каналов')
+if 'lda_group_words' not in st.session_state:
+    st.session_state.lda_group_words = []
+if 'all_mes_words' not in st.session_state:
+    st.session_state.all_mes_words = []
+if 'cl_mas_data' not in st.session_state:
+    st.session_state.cl_mas_data = []
 
-#img=pil.Image.open('D:/DataScience/WEB/DEMO_3/photo.jpg')
-img=pil.Image.open('photo.jpg')
+st.header('web-сервис: тематичеcкий анализ контента телеграм-каналов')
+st.text("(перейдите в режим широкого экрана - три черточни в правом углу, Settings, WideMode)")
+img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+#img=pil.Image.open('photo.jpg')
 st.sidebar.image(img)
 
-filename = st.sidebar.selectbox("Выберите телеграм-канал",["t.me.rian_ru","@kunuzru","@gazetauz"])
+def profil():
 
-min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"])
-max_tfidf = st.sidebar.selectbox("Выберите макс. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
-minf=float(min_tfidf)
-maxf=float(max_tfidf)
-allmes=[]
+    st.text("Создание корпуса слов и тематического профиля выбранного канала")
+    filename = st.sidebar.selectbox("Выберите телеграм-канал",["t.me.rian_ru","@kunuzru","@gazetauz"])
 
-sel_cntgroup = st.sidebar.selectbox("Выберите количество тематических групп",["1","2","3","4","5","6","7","8","9","10"],index=9)
-sel_cntwords = st.sidebar.selectbox("Выберите количество слов в группе",["1","2","3","4","5","6","7","8","9","10"],index=9)
-sel_cntgroup=int(sel_cntgroup)
-sel_cntwords=int(sel_cntwords)
+    min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"])
+    max_tfidf = st.sidebar.selectbox("Выберите макс. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
+    minf=float(min_tfidf)
+    maxf=float(max_tfidf)
+    allmes=[]
 
-but_lda=st.sidebar.button("Начать тематический анализ")
-if but_lda: 
-    mas_date=[]
+    sel_cntgroup = st.sidebar.selectbox("Выберите количество тематических групп",["1","2","3","4","5","6","7","8","9","10"],index=9)
+    sel_cntwords = st.sidebar.selectbox("Выберите количество слов в группе",["1","2","3","4","5","6","7","8","9","10"],index=9)
+    sel_cntgroup=int(sel_cntgroup)
+    sel_cntwords=int(sel_cntwords)
+
+    but_lda=st.sidebar.button("Создать тематический профиль")
+    if but_lda: 
+        mas_date=[]
     
-    try:
-        cl_mas_data = asyncio.run(work())
-        st.text("принято сообщений канала) - "+str(len(cl_mas_data)))     
-    except: 
-        st.text("ошибка чтения канала!")
+        try:
+            cl_mas_data = asyncio.run(work())
+            st.session_state.cl_mas_data=cl_mas_data
+            st.text("принято сообщений канала) - "+str(len(cl_mas_data)))     
+        except: 
+            st.text("ошибка чтения канала!")
         
-    fig, listp, allmes =start_corpus(cl_mas_data, minf, maxf)
-    #fig, listp, allmes =start_corpus(filename, minf, maxf)
-    st.text("3. Вывод гистограммы")
-    st.pyplot(fig)
-    for curmes in listp:
-        st.text(curmes)
-    st.text("1. Начался анализ слов методом латентного размещения Дирихле(LDA)")
-    lda=LDA(sel_cntgroup,sel_cntwords,allmes,filename) 
-    st.text("2. Вывод тепловой карты (более темный цвет - более частое использование слова)")
-    st.pyplot(lda.fig_lda)
+        fig, listp, allmes =start_corpus(cl_mas_data, minf, maxf)
+        #fig, listp, allmes =start_corpus(filename, minf, maxf)
+        
+        if len(allmes)>0:
+            st.text("3. Корпус создан. Вывод гистограммы")
+            st.pyplot(fig)
+            for curmes in listp:
+                st.text(curmes)
+            st.text("1. Начался анализ слов методом латентного размещения Дирихле(LDA)")
+            lda=LDA(sel_cntgroup,sel_cntwords,allmes,filename) 
+            st.text("2. Вывод тепловой карты (более темный цвет - более частое использование слова)")
+            st.pyplot(lda.fig_lda) 
+            
+            st.session_state.lda_group_words = lda.gr_wrd
+            st.write(st.session_state.lda_group_words)
+            st.session_state.all_mes_words = allmes
+            st.write(st.session_state.all_mes_words)
+        else:
+            st.text("Ошибка! Корпус не создан")
+
+def search():
+
+    st.text("Найти сообщения по ключевым словам выбранной группы") 
+    st.text("*************************************")
+    gr_wrd=st.session_state.lda_group_words
+    all_mes=st.session_state.all_mes_words
+    cl_data=st.session_state.cl_mas_data
+           
+    if len(gr_wrd)==0: 
+        st.text("Ошибка! Тематический профиль не создан.")
+        return
+    
     #for curmes in lda.list_lda:
     #    st.text(curmes)
-    st.text("3. Поиск сообщений по некоторым словам группы")
-    
-    sel_findgroup = st.sidebar.selectbox("Выберите группу для поиска",["1","2","3","4","5","6","7","8","9","10"],index=0)
+        
+    sel_findgroup = st.sidebar.selectbox("Выберите группу для поиска",["0","1","2","3","4","5","6","7","8","9"],index=0)
     if sel_findgroup:
-        sel_findwords = st.sidebar.multiselect("Выберите слова для поиска",(lda.gr_wrd[int(sel_findgroup)]))
+        progress_bar = st.sidebar.progress(0)
+        new_gr_words=[]
+        old_gr_words=gr_wrd[int(sel_findgroup)]
+        for curw in old_gr_words:
+            new_gr_words.append(curw[1:len(curw)-1])
+        sel_findwords = st.sidebar.multiselect("Выберите слова для поиска",(new_gr_words))
         if sel_findwords:
             but_find=st.sidebar.button("Начать поиск сообщений")  
-        
-     
-
+            if but_find:
+                srch_mes=[]
+                cntmes=len(all_mes)
+                k=(cntmes//100)+1
+                for i in range(cntmes):
+                    progress_bar.progress(i//k)
+                    if len(list(set(all_mes[i])&set(sel_findwords)))>0:
+                        #st.text(all_mes[i])
+                        #st.text("-----")
+                        #st.text(cl_data[i])
+                        #st.text("*************************************")
+                        srch_mes.append("("+str(i)+")  *** "+cl_data[i])
+                             
+                for mes in srch_mes:
+                    st.text(mes)
+                    st.text("*************************************")
+                if len(srch_mes)==0:
+                    st.text("Сообщения не найдены")                
+app = MultiApp()
+app.add_app("Профиль", profil)
+app.add_app("Поиск", search)
+app.run()
 
 
