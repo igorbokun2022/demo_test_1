@@ -45,34 +45,10 @@ async def work():
     mas_mes=[] 
     mas_mes_date=[]     
     loop=asyncio.new_event_loop()
-    
-    '''    
-    client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
-    st.text("22222222222222222222222222222222222222")
-    await client.start(phone=phone, code_callback=code_callback)
-    
-    st.text("33333333333333333333333333333333333333")
-    
-    try:
-        channel_entity=await client.get_entity(ex.channel_href[ex.chan_id])
-    except: 
-        st.text("Connect Error!")
-        return
-    st.text("channel_entity="+str(channel_entity))
-    st.text("44444444444444444444444444444444444444")
-    messages = await client.get_messages(channel_entity, limit=cnt_mes)
-    
-    for message in messages:
-        mas_mes_date.append(message.date)
-        mes=message.message
-        if isinstance(mes,str):
-            mas_mes.append(mes) 
-            #st.text(mes)
-                
-    await client.disconnect()
-    '''
+   
     #*************************************
-    df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
+    #df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
+    df = pd.read_excel('postnews1.xlsx')
     df.columns=['A']
     cl_mas_data = list(df['A'])
     st.text("принято сообщений канала - "+str(len(cl_mas_data)))
@@ -363,8 +339,8 @@ if 'cl_mas_data' not in st.session_state:
 
 st.header('web-сервис: тематичеcкий анализ контента телеграм-каналов')
 st.text("(перейдите в режим широкого экрана - три черточни в правом углу, Settings, WideMode)")
-img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-#img=pil.Image.open('photo.jpg')
+#img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+img=pil.Image.open('photo.jpg')
 st.sidebar.image(img)
 
 def profil():
