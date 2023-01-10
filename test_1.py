@@ -12,13 +12,12 @@ import PIL as pil
 import asyncio
 import datetime
 from telethon import TelegramClient
-
 from multiapp import MultiApp
 
 cl_mas_data=[]
 cl_mas_date=[]
 
-filename=""
+filename="@gazetauz"
 minf=0.1
 maxf=1.0
 delw=[]
@@ -26,14 +25,9 @@ cur_del_words=[]
 corpus=[]
 all_mes_words=[]
 
-api_id = 16387030
-api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
-ses_name='telemesmonitor'
-phone='+998909790855'
-code='22561'
 # получен  запросом - await client.start(phone=phone, code_callback=code_callback)
 max_posts=1000
-cnt_mes=500
+
 
 stemmer=nltk.stem.SnowballStemmer(language="russian")
 stopwords = stopwords.words('russian') 
@@ -42,24 +36,55 @@ morph = MorphAnalyzer()
 #*****************************************************************
 async def work():
     
-    mas_mes=[] 
-    mas_mes_date=[]     
+    api_id = 16387030
+    api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
+    ses_name='telemesmonitor'
+    phone='+998909790855'
+    code='75874'    
+    cnt_mes=500    
+      
     loop=asyncio.new_event_loop()
-   
+    
+    #*************************************
+    client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
+    #st.text("22222222222222222222222222222222222222")
+    await client.start(phone=phone, code_callback=code_callback)
+    
+    #st.text("33333333333333333333333333333333333333")
+    
+    try:
+        channel_entity=await client.get_entity(filename)
+    except: 
+        st.text("Connect Error!")
+        return
+    #st.text("channel_entity="+str(channel_entity))
+    #st.text("44444444444444444444444444444444444444")
+    messages = await client.get_messages(channel_entity, limit=cnt_mes)
+    
+    for message in messages:
+        cl_mas_date.append(message.date)
+        mes=message.message
+        if isinstance(mes,str):
+            cl_mas_data.append(mes) 
+            #st.text(mes)
+             
+    await client.disconnect()
     #*************************************
     #df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
-    df = pd.read_excel('postnews1.xlsx')
-    df.columns=['A']
-    cl_mas_data = list(df['A'])
-    st.text("принято сообщений канала - "+str(len(cl_mas_data)))
+    #df = pd.read_excel('postnews1.xlsx')
+    #df.columns=['A']
+    #cl_mas_data = list(df['A'])
+    #st.text("принято сообщений канала - "+str(len(cl_mas_data)))
     #*************************************
-        
-    return cl_mas_data
+    
+    #st.text("len="+str(len(cl_mas_data)))    
+     
+    return cl_mas_data, cl_mas_date
         
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       #code='18562'
+       code='75874'
        return code
      
 
@@ -99,8 +124,11 @@ class LDA(object):
         list_posts.append(str(num_words) + ' наиболее значимых слов для каждой категории:')
         
         self.gr_wrd=[]
-                
+               
+        k=0    
         for item in ldamodel.print_topics(num_topics=num_topics, num_words=num_words):
+            st.text("анализ группы - "+str(k))
+            k+=1
             #st.text('\n Категория - '+str(item[0]))
             list_posts.append('\n Категория - '+str(item[0]))
             list_posts.append('**********************************')        
@@ -174,7 +202,9 @@ class LDA(object):
             mplt.pyplot.text(0.26+dw*j, 1.1, 'гр-'+str(j), fontsize=48, color='navy')
     
         mplt.pyplot.axhline(y=0.9+dh, xmin=0, xmax=1.0, color='black')
+        pr_bar0 = st.progress(0)
         for i in range(len(new_words)):
+            pr_bar0.progress(i)
             mplt.pyplot.text(0, 0.91-dh*i, new_words[i], fontsize=60, color='black')
             mplt.pyplot.axhline(y=0.9-dh*i, xmin=0, xmax=1.0, color='black')
             for j in range(num_topics+1):
@@ -234,7 +264,7 @@ class Prepare(object):
 
     def histogramm(self, all_mes_words):
     
-        st.text("2. Началось сформирование гистограммы обратных частот слов в сообщениях") 
+        st.text("2. Началось формирование гистограммы обратных частот слов в сообщениях") 
          
         my_dictionary = corpora.Dictionary(all_mes_words)
         bow_corpus =[my_dictionary.doc2bow(mes, allow_update = True) for mes in all_mes_words]
@@ -284,6 +314,7 @@ class Prepare(object):
         all_words=[]
         print("*************************************") 
         for line in self.mas:  
+            if len(line)<10: continue
             cur_mes_words=[]
             for sent in nltk.sent_tokenize(line): 
                 cur_sent_words=[]
@@ -330,6 +361,8 @@ def start_corpus(mas_data, minf, maxf):
 
 #**************************************************************
 
+st.set_page_config(layout="wide")
+
 if 'lda_group_words' not in st.session_state:
     st.session_state.lda_group_words = []
 if 'all_mes_words' not in st.session_state:
@@ -337,16 +370,18 @@ if 'all_mes_words' not in st.session_state:
 if 'cl_mas_data' not in st.session_state:
     st.session_state.cl_mas_data = []
 
-st.header('web-сервис: тематичеcкий анализ контента телеграм-каналов')
-st.text("(перейдите в режим широкого экрана - три черточни в правом углу, Settings, WideMode)")
-#img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-img=pil.Image.open('photo.jpg')
-st.sidebar.image(img)
+st.header('Web-сервис: тематичеcкий анализ контента телеграм-каналов')
+img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+#img=pil.Image.open('photo.jpg')
+st.sidebar.image(img, width=250)
 
+    
 def profil():
 
-    st.text("Создание корпуса слов и тематического профиля выбранного канала")
-    filename = st.sidebar.selectbox("Выберите телеграм-канал",["t.me.rian_ru","@kunuzru","@gazetauz"])
+    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов и тематического профиля выбранного канала</p>'
+    st.markdown(text_1, unsafe_allow_html=True)
+    #st.text("Создание корпуса слов и тематического профиля выбранного канала")
+    filename = st.sidebar.selectbox("Выберите телеграм-канал",["@kunuzru","@gazetauz"])
 
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"])
     max_tfidf = st.sidebar.selectbox("Выберите макс. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
@@ -364,12 +399,16 @@ def profil():
         mas_date=[]
     
         try:
-            cl_mas_data = asyncio.run(work())
+            asyncio.run(work())            
             st.session_state.cl_mas_data=cl_mas_data
-            st.text("принято сообщений канала) - "+str(len(cl_mas_data)))     
+            st.text("0. Принято сообщений канала - "+str(len(cl_mas_data)))     
         except: 
             st.text("ошибка чтения канала!")
         
+        #st.text("len="+str(len(cl_mas_data)))
+        #for mes in cl_mas_data:
+        #    st.text(mes)
+            
         fig, listp, allmes =start_corpus(cl_mas_data, minf, maxf)
         #fig, listp, allmes =start_corpus(filename, minf, maxf)
         
@@ -392,7 +431,8 @@ def profil():
 
 def search():
 
-    st.text("Найти сообщения по ключевым словам выбранной группы") 
+    text_2 = '<p style="font-family:sans-serif; color:Green; font-size: 24px;">Поиск сообщений по ключевым словам выбранной группы</p>'
+    st.markdown(text_2, unsafe_allow_html=True)    
     st.text("*************************************")
     gr_wrd=st.session_state.lda_group_words
     all_mes=st.session_state.all_mes_words
@@ -407,7 +447,6 @@ def search():
         
     sel_findgroup = st.sidebar.selectbox("Выберите группу для поиска",["0","1","2","3","4","5","6","7","8","9"],index=0)
     if sel_findgroup:
-        progress_bar = st.sidebar.progress(0)
         new_gr_words=[]
         old_gr_words=gr_wrd[int(sel_findgroup)]
         for curw in old_gr_words:
@@ -416,11 +455,16 @@ def search():
         if sel_findwords:
             but_find=st.sidebar.button("Начать поиск сообщений")  
             if but_find:
+                progress_bar = st.sidebar.progress(0)             
                 srch_mes=[]
                 cntmes=len(all_mes)
-                k=(cntmes//100)+1
+                delta=(cntmes//10)
+                curdelta=delta
+                k=0
                 for i in range(cntmes):
-                    progress_bar.progress(i//k)
+                    if i>curdelta:
+                        curdelta+=delta
+                        progress_bar.progress(k*10)
                     if len(list(set(all_mes[i])&set(sel_findwords)))>0:
                         #st.text(all_mes[i])
                         #st.text("-----")
