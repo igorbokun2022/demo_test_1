@@ -371,8 +371,8 @@ if 'cl_mas_data' not in st.session_state:
     st.session_state.cl_mas_data = []
 
 st.header('Web-сервис: тематичеcкий анализ контента телеграм-каналов')
-img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-#img=pil.Image.open('photo.jpg')
+#img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
 
     
