@@ -40,33 +40,40 @@ async def work():
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='75874'    
+    code='86642'    
     cnt_mes=500    
       
     loop=asyncio.new_event_loop()
     
     #*************************************
-    client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
-    #st.text("22222222222222222222222222222222222222")
-    await client.start(phone=phone, code_callback=code_callback)
-    
-    #st.text("33333333333333333333333333333333333333")
+    try:
+        client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
+        st.text("22222222222222222222222222222222222222")
+        await client.start(phone=phone, code_callback=code_callback)
+    except:
+        st.text("Client create/start Error!")
+        return
+    st.text("33333333333333333333333333333333333333")
     
     try:
         channel_entity=await client.get_entity(filename)
     except: 
         st.text("Connect Error!")
         return
-    #st.text("channel_entity="+str(channel_entity))
-    #st.text("44444444444444444444444444444444444444")
-    messages = await client.get_messages(channel_entity, limit=cnt_mes)
+    try:
+        st.text("channel_entity="+str(channel_entity))
+        st.text("44444444444444444444444444444444444444")
+        messages = await client.get_messages(channel_entity, limit=cnt_mes)
+    except:
+        st.text("Channel_entity Error!")
+        return
     
     for message in messages:
         cl_mas_date.append(message.date)
         mes=message.message
         if isinstance(mes,str):
             cl_mas_data.append(mes) 
-            #st.text(mes)
+            st.text(mes)
              
     await client.disconnect()
     #*************************************
@@ -84,7 +91,7 @@ async def work():
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='75874'
+       code='86642'
        return code
      
 
@@ -371,8 +378,8 @@ if 'cl_mas_data' not in st.session_state:
     st.session_state.cl_mas_data = []
 
 st.header('Web-сервис: тематичеcкий анализ контента телеграм-каналов')
-#img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-img=pil.Image.open('photo.jpg')
+img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+#img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
 
     
