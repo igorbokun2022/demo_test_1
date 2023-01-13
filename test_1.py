@@ -40,7 +40,7 @@ async def work():
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='86642'    
+    code='40353'    
     cnt_mes=500    
       
     loop=asyncio.new_event_loop()
@@ -91,7 +91,7 @@ async def work():
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='86642'
+       code='40353'
        return code
      
 
