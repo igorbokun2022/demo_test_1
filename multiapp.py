@@ -23,7 +23,7 @@ class MultiApp:
 
     def run(self):
         app = st.sidebar.radio(
-            'Создайте профиль, а затем осуществите поиск',
+            'Создайте сначала корпус, потом профиль, а затем осуществите отбор и анализ сообщений',
             self.apps,
             format_func=lambda app: app['title'])
 

@@ -9,15 +9,19 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('punkt')
 import PIL as pil
+import io
 import asyncio
 import datetime
 from telethon import TelegramClient
 from multiapp import MultiApp
 
+from gensim.models.word2vec import Word2Vec
+import seaborn as sns
+from sklearn.manifold import TSNE
+
 cl_mas_data=[]
 cl_mas_date=[]
 
-filename="@gazetauz"
 minf=0.1
 maxf=1.0
 delw=[]
@@ -28,54 +32,65 @@ all_mes_words=[]
 # получен  запросом - await client.start(phone=phone, code_callback=code_callback)
 max_posts=1000
 
-
 stemmer=nltk.stem.SnowballStemmer(language="russian")
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
 #*****************************************************************
-async def work():
+async def work(filename, cnt_days):
     
     api_id = 16387030
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='40353'    
+    code='72069'    
     cnt_mes=500    
+    cdays=int(cnt_days)
+    date_end=datetime.date.today()
+    date_beg=date_end-datetime.timedelta(days=cdays)
       
     loop=asyncio.new_event_loop()
     
     #*************************************
     try:
         client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
-        st.text("22222222222222222222222222222222222222")
+        #st.text("22222222222222222222222222222222222222")
         await client.start(phone=phone, code_callback=code_callback)
     except:
-        st.text("Client create/start Error!")
+        st.error("Client create/start Error!")
         return
-    st.text("33333333333333333333333333333333333333")
+    #st.text("33333333333333333333333333333333333333")
     
     try:
         channel_entity=await client.get_entity(filename)
     except: 
-        st.text("Connect Error!")
+        st.error("Connect Error!")
         return
     try:
-        st.text("channel_entity="+str(channel_entity))
-        st.text("44444444444444444444444444444444444444")
+        #st.text("channel_entity="+str(channel_entity))
+        #st.text("44444444444444444444444444444444444444")
         messages = await client.get_messages(channel_entity, limit=cnt_mes)
     except:
-        st.text("Channel_entity Error!")
+        st.error("Channel_entity Error!")
         return
-    
+            
     for message in messages:
-        cl_mas_date.append(message.date)
-        mes=message.message
-        if isinstance(mes,str):
-            cl_mas_data.append(mes) 
-            st.text(mes)
-             
+        mes_date=message.date.date()
+        cl_mas_date.append(mes_date)
+        if mes_date>=date_beg and mes_date<=date_end:
+            #st.text(str(mes_date)) 
+            mes=message.message
+            if isinstance(mes,str):
+                cl_mas_data.append(mes) 
+                #st.text(mes)
+        
     await client.disconnect()
+    
+    text_2="Отобрано "+str(len(cl_mas_data))+" сообщений в диапазоне "+str(date_beg)+" - "+str(date_end)
+    text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 16px;">'+text_2+'</p>'
+    st.markdown(text_2, unsafe_allow_html=True)
+
+    
     #*************************************
     #df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
     #df = pd.read_excel('postnews1.xlsx')
@@ -91,9 +106,115 @@ async def work():
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='40353'
+       code='72069'
        return code
      
+#*****************************************************************
+
+class word2vec(object):
+    
+    def __init__(self, texts, nkw, filename):
+        self.texts=texts
+        self.nkw=nkw
+        self.filename=filename
+                
+    def view_word2vec(self,model, word, list_names):
+        """Plot in seaborn the results from the t-SNE dimensionality reduction 
+        algorithm of the vectors of a query word,
+        its list of most similar words, and a list of words."""
+        vectors_words = [model.wv.word_vec(word)]
+        word_labels = [word]
+        color_list = ['red']
+        close_words = model.wv.most_similar(word)
+        for wrd_score in close_words:
+            wrd_vector = model.wv.word_vec(wrd_score[0])
+            vectors_words.append(wrd_vector)
+            word_labels.append(wrd_score[0])
+            color_list.append('blue')
+        # adds the vector for each of the words from list_names to the array
+        #for nm in list_names: st.text(nm)
+        
+        for wrd in list_names:
+            wrd_vector = model.wv.word_vec(wrd)
+            vectors_words.append(wrd_vector)
+            word_labels.append(wrd)
+            color_list.append('green')
+        # t-SNE reduction
+        Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca")
+            .fit_transform(vectors_words))
+        # Sets everything up to plot
+        df = pd.DataFrame({"x": [x for x in Y[:, 0]],
+                    "y": [y for y in Y[:, 1]],
+                    "words": word_labels,
+                    "color": color_list})
+        fig, _ = mplt.pyplot.subplots()
+        fig.set_size_inches(9, 9)
+        # Basic plot
+        p1 = sns.regplot(data=df,
+                    x="x",
+                    y="y",
+                    fit_reg=False,
+                    marker="o",
+                    scatter_kws={"s": 40,
+                                "facecolors": df["color"]}
+        )
+        # Adds annotations one by one with a loop
+        for line in range(0, df.shape[0]):
+            p1.text(df["x"][line],
+            df["y"][line],
+            " " + df["words"][line].title(),
+            horizontalalignment="left",
+            verticalalignment="bottom", size="medium",
+            color=df["color"][line],
+            weight="normal"
+        ).set_size(15)
+        mplt.pyplot.xlim(Y[:, 0].min()-50, Y[:, 0].max()+50)
+        mplt.pyplot.ylim(Y[:, 1].min()-50, Y[:, 1].max()+50)
+        mplt.pyplot.title('Визуализация контекстной близости выбранных слов к базовому слову <{}>'.format(word.title()))
+        canvas = mplt.pyplot.get_current_fig_manager().canvas
+        canvas.draw()
+        buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+        st.image(buf,60)
+        
+
+    def start_word_2_vec(self):
+        nkw=self.nkw
+        texts=self.texts
+        l=len(nkw)
+        #st.text("***********************************************")
+          
+        if (l<=0): 
+            st.text("Error! Key words?")
+            return 
+        
+        base_word=nkw[0]
+        list_words=nkw[1:l]
+        
+        #st.text("**********************************************************")
+        #st.text(base_word)
+        #st.text(list_words)
+        #st.text("**********************************************************")
+
+        w2v_model = Word2Vec(
+        min_count=10,
+        window=2,
+        vector_size=300,
+        negative=10,
+        alpha=0.03,
+        min_alpha=0.0007,
+        sample=6e-5,
+        sg=1)
+
+        w2v_model.build_vocab(texts)
+        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=1000, report_delay=1)
+        p=[]
+        p=w2v_model.wv.most_similar(positive=[base_word])
+        #for word in p:
+        #    st.text(word)
+        #    st.text(base_word)
+        self.view_word2vec(w2v_model, base_word,list_words)
+        
+        
 
 #*****************************************************************
 
@@ -101,6 +222,7 @@ class LDA(object):
     
     def __init__(self,num_topics,num_words,input_text,nm_chan):
         self.fig_lda=0
+        self.buf_lda=0
         self.list_lda=[]
         self.gr_wrd=[]
         self.lda_analysis(num_topics,num_words,input_text,nm_chan)
@@ -126,7 +248,6 @@ class LDA(object):
         maxval=0
         list_posts=[]
         
-        list_posts.append("*****************************************************************")
         list_posts.append("Классификация текста канала - "+str(nm_chan) +" по "+str(num_topics)+" категориям")
         list_posts.append(str(num_words) + ' наиболее значимых слов для каждой категории:')
         
@@ -134,17 +255,16 @@ class LDA(object):
                
         k=0    
         for item in ldamodel.print_topics(num_topics=num_topics, num_words=num_words):
-            st.text("анализ группы - "+str(k))
             k+=1
-            #st.text('\n Категория - '+str(item[0]))
-            list_posts.append('\n Категория - '+str(item[0]))
-            list_posts.append('**********************************')        
+            list_posts.append('\n ******************************************                Категория - '+str(item[0]))
             # Вывод представительных слов вместе с их
             # относительными вкладами
             list_of_strings = item[1].split(' + ')
             
-            cur_wrd=[]              
+            cur_wrd=[]
+            l=0              
             for text in list_of_strings:
+                l+=1
                 row_frm=[]             
                 weight = text.split('*') [0]
                 word = text.split('*') [1]
@@ -170,10 +290,14 @@ class LDA(object):
                         lst_frm[ind_word][int(item[0]+1)]=int(float(weight) * 1000)
                         if round(float(weight) * 1000,0)>maxval: maxval=int(float(weight) * 1000)
                 #*****************************************************        
-                list_posts.append(word+' ==> '+str(round(float(weight) * 100,2) + 1%1)+'('+str(lst_frm[ind_word][int(item[0]+1)])+')')
+                list_posts.append(str(k-1)+'/'+str(l)+' --- '+word+' --- '+str(round(float(weight) * 100,2) + 1%1)+'('+str(lst_frm[ind_word][int(item[0]+1)])+')')
                 cur_wrd.append(word)
                 
-            self.gr_wrd.append(cur_wrd[1:len(cur_wrd)-1])
+            self.gr_wrd.append(cur_wrd)
+            
+        #for i in range(num_topics):
+        #    for j in range(num_words):
+        #        st.text(str(i)+"/"+str(j)+"/"+self.gr_wrd[i][j])             
         
         #*****************************************************
         
@@ -203,15 +327,27 @@ class LDA(object):
         mapsize=(60,80) 
         
         fig,ax = mplt.pyplot.subplots(figsize = mapsize)
-        mplt.pyplot.title('Семантический профиль канала - '+str(nm_chan)+ '  на основе последних сообщений',fontsize=68, loc='left')
+        mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan)+ '  на основе отобранных сообщений',fontsize=68, loc='left')
         
         for j in range(num_topics):
             mplt.pyplot.text(0.26+dw*j, 1.1, 'гр-'+str(j), fontsize=48, color='navy')
     
         mplt.pyplot.axhline(y=0.9+dh, xmin=0, xmax=1.0, color='black')
         pr_bar0 = st.progress(0)
+        if len(new_words)>=100: delta=len(new_words)//10
+        else: delta=100//len(new_words)
+        curdelta=0
+        k=1
+        
         for i in range(len(new_words)):
-            pr_bar0.progress(i)
+            if i>curdelta:
+                curdelta+=delta
+                if k<10:
+                    pr_bar0.progress(k*10)
+                    k+=1
+                else:
+                    pr_bar0.progress(100)
+                    curdelta=1000000
             mplt.pyplot.text(0, 0.91-dh*i, new_words[i], fontsize=60, color='black')
             mplt.pyplot.axhline(y=0.9-dh*i, xmin=0, xmax=1.0, color='black')
             for j in range(num_topics+1):
@@ -227,12 +363,17 @@ class LDA(object):
                         lw=4))
                                 
             #plt.text(x0, y0+dh*j, new_words[i], fontsize=14, color='navy')
-               
+        
+        canvas = mplt.pyplot.get_current_fig_manager().canvas
+        canvas.draw()
+        buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
+                    
         dff=pd.DataFrame(lst_frm)
         dff.columns=cols
         
         #***********************************
         self.fig_lda=fig
+        self.buf_lda=buf
         self.list_lda=list_posts.copy() 
         
         return 
@@ -271,7 +412,7 @@ class Prepare(object):
 
     def histogramm(self, all_mes_words):
     
-        st.text("2. Началось формирование гистограммы обратных частот слов в сообщениях") 
+        st.info("2. Началось формирование гистограммы обратных частот слов в сообщениях") 
          
         my_dictionary = corpora.Dictionary(all_mes_words)
         bow_corpus =[my_dictionary.doc2bow(mes, allow_update = True) for mes in all_mes_words]
@@ -309,13 +450,16 @@ class Prepare(object):
 
         fig, ax = mplt.pyplot.subplots(figsize =(10, 7)) 
         ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+        canvas = mplt.pyplot.get_current_fig_manager().canvas
+        canvas.draw()
+        buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
             
-        return new_del_words, fig
+        return new_del_words, fig, buf
 
 #**********************************************************
         
     def prepare_all(self):
-        st.text("1. Началось создание корпуса слов")
+        st.info("1. Началось создание корпуса слов")
         all_mes_words=[]
         all_sent_words=[]
         all_words=[]
@@ -335,8 +479,8 @@ class Prepare(object):
                 all_sent_words.append(cur_sent_words)        
             all_mes_words.append(cur_mes_words)    
 
-        new_del_words, fig=self.histogramm(all_mes_words)
-        return all_mes_words, all_sent_words, all_words, new_del_words, fig
+        new_del_words, fig, buf=self.histogramm(all_mes_words)
+        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf
     
     
 #**********************************************************
@@ -348,105 +492,134 @@ def start_corpus(mas_data, minf, maxf):
     #mas_data = list(df['A'])
             
     prep = Prepare(mas_data, delw, minf, maxf)
-    all_mes_words, all_sent_words, all_words, curdelw, fig = prep.prepare_all()
+    all_mes_words, all_sent_words, all_words, curdelw, fig, buf = prep.prepare_all()
     cur_del_words=curdelw
     corpus=all_mes_words
     
     list_posts=[]
-    list_posts.append("*********************************************************")
-    list_posts.append("Информация о корпусе слов")
-    list_posts.append("Всего сообщений = "+str(len(all_mes_words)))
+    list_posts.append(" *****   Информация о корпусе слов     *****")
     list_posts.append("Всего преддложений = "+str(len(all_sent_words)))
     list_posts.append("Всего слов = "+str(len(all_words)))
     list_posts.append("Всего удалено слов = "+str(len(curdelw)))
     list_posts.append("Всего осталось слов = "+str(len(all_words)-len(curdelw)))
-    list_posts.append("*********************************************************")
-     
-         
-    return fig, list_posts, all_mes_words
+                 
+    return buf, fig, list_posts, all_mes_words, all_sent_words
 
 
 #**************************************************************
 
 st.set_page_config(layout="wide")
 
+if 'file_name' not in st.session_state:
+    st.session_state.file_name = " "
 if 'lda_group_words' not in st.session_state:
     st.session_state.lda_group_words = []
 if 'all_mes_words' not in st.session_state:
     st.session_state.all_mes_words = []
+if 'sent_words' not in st.session_state:
+    st.session_state.sent_words = []
 if 'cl_mas_data' not in st.session_state:
     st.session_state.cl_mas_data = []
+if 'cl_mas_date' not in st.session_state:
+    st.session_state.cl_mas_date = []
 
-st.header('Web-сервис: тематичеcкий анализ контента телеграм-каналов')
-#img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-img=pil.Image.open('photo.jpg')
+
+st.header('Web-сервис: тематичеcкий онлайн анализ контента телеграм-каналов')
+img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+#img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
 
     
-def profil():
+def corpus():
 
-    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов и тематического профиля выбранного канала</p>'
+    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
-    #st.text("Создание корпуса слов и тематического профиля выбранного канала")
-    filename = st.sidebar.selectbox("Выберите телеграм-канал",["@kunuzru","@gazetauz"])
-
-    min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"])
+    filename = st.sidebar.selectbox("Выберите телеграм-канал",["@gazetauz","@kunuzru"])
+    
+    cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
+    min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
     max_tfidf = st.sidebar.selectbox("Выберите макс. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
     minf=float(min_tfidf)
     maxf=float(max_tfidf)
+   
     allmes=[]
-
-    sel_cntgroup = st.sidebar.selectbox("Выберите количество тематических групп",["1","2","3","4","5","6","7","8","9","10"],index=9)
-    sel_cntwords = st.sidebar.selectbox("Выберите количество слов в группе",["1","2","3","4","5","6","7","8","9","10"],index=9)
-    sel_cntgroup=int(sel_cntgroup)
-    sel_cntwords=int(sel_cntwords)
-
-    but_lda=st.sidebar.button("Создать тематический профиль")
-    if but_lda: 
+    but_corpus=st.sidebar.button("Создать корпус")
+    if but_corpus:
+               
         mas_date=[]
-    
         try:
-            asyncio.run(work())            
+            asyncio.run(work(filename, cnt_days))            
             st.session_state.cl_mas_data=cl_mas_data
-            st.text("0. Принято сообщений канала - "+str(len(cl_mas_data)))     
+            st.session_state.cl_mas_date=cl_mas_date
         except: 
-            st.text("ошибка чтения канала!")
+            st.error("ошибка чтения канала!")
         
         #st.text("len="+str(len(cl_mas_data)))
         #for mes in cl_mas_data:
         #    st.text(mes)
             
-        fig, listp, allmes =start_corpus(cl_mas_data, minf, maxf)
+        buf, fig, listp, allmes, sent_words =start_corpus(cl_mas_data, minf, maxf)
         #fig, listp, allmes =start_corpus(filename, minf, maxf)
+        st.session_state.sent_words=sent_words
+        
         
         if len(allmes)>0:
-            st.text("3. Корпус создан. Вывод гистограммы")
-            st.pyplot(fig)
+            st.info("3. Корпус создан. Вывод гистограммы")
+            st.image(buf,60)
             for curmes in listp:
-                st.text(curmes)
-            st.text("1. Начался анализ слов методом латентного размещения Дирихле(LDA)")
-            lda=LDA(sel_cntgroup,sel_cntwords,allmes,filename) 
-            st.text("2. Вывод тепловой карты (более темный цвет - более частое использование слова)")
-            st.pyplot(lda.fig_lda) 
-            
-            st.session_state.lda_group_words = lda.gr_wrd
-            st.write(st.session_state.lda_group_words)
-            st.session_state.all_mes_words = allmes
-            st.write(st.session_state.all_mes_words)
+                st.info(curmes)
         else:
-            st.text("Ошибка! Корпус не создан")
-
+            st.error("Ошибка! Корпус не создан")
+        
+    st.session_state.file_name=filename
+    st.session_state.all_mes_words = allmes      
+         
+def profil():  
+    
+    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание тематического профиля группы/слова для выбранного канала</p>'
+    st.markdown(text_1, unsafe_allow_html=True)
+    
+    filename=st.session_state.file_name
+    allmes=st.session_state.all_mes_words
+    if len(allmes)==0:
+        st.error("Корпус не создан!")
+        return
+    
+    sel_cntgroup = st.sidebar.selectbox("Выберите количество тематических групп",["1","2","3","4","5","6","7","8","9","10"],index=9)
+    sel_cntwords = st.sidebar.selectbox("Выберите количество слов в группе",["1","2","3","4","5","6","7","8","9","10"],index=9)
+    sel_cntgroup=int(sel_cntgroup)
+    sel_cntwords=int(sel_cntwords)
+        
+    but_lda=st.sidebar.button("Создать профиль")
+    if but_lda:             
+        st.info("1. Начался анализ слов методом латентного размещения Дирихле(LDA)")
+        st.warning("Подождите ...")
+        lda=LDA(sel_cntgroup,sel_cntwords,allmes,filename) 
+        st.info("2. Вывод тепловой карты (более темный цвет - более частое использование слова)")
+        st.image(lda.buf_lda,20)
+        st.session_state.lda_group_words = lda.gr_wrd
+        for mes in lda.list_lda:
+            st.info(mes)
+        #st.write(st.session_state.lda_group_words)
+    
 def search():
 
-    text_2 = '<p style="font-family:sans-serif; color:Green; font-size: 24px;">Поиск сообщений по ключевым словам выбранной группы</p>'
+    text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отбор и анализ сообщений по ключевым словам выбранной группы</p>'
     st.markdown(text_2, unsafe_allow_html=True)    
-    st.text("*************************************")
+    
+    filename=st.session_state.file_name
     gr_wrd=st.session_state.lda_group_words
     all_mes=st.session_state.all_mes_words
+    sent_words=st.session_state.sent_words
     cl_data=st.session_state.cl_mas_data
-           
+    cl_date=st.session_state.cl_mas_date
+    
+    #for i in range(len(gr_wrd)):
+    #        for j in range(len(gr_wrd[i])):
+    #            st.text(str(i)+"/"+str(j)+"/"+gr_wrd[i][j])
+    
     if len(gr_wrd)==0: 
-        st.text("Ошибка! Тематический профиль не создан.")
+        st.error("Ошибка! Тематический профиль не создан.")
         return
     
     #for curmes in lda.list_lda:
@@ -457,36 +630,66 @@ def search():
         new_gr_words=[]
         old_gr_words=gr_wrd[int(sel_findgroup)]
         for curw in old_gr_words:
-            new_gr_words.append(curw[1:len(curw)-1])
-        sel_findwords = st.sidebar.multiselect("Выберите слова для поиска",(new_gr_words))
-        if sel_findwords:
+            new_gr_words.append(curw)
+        sel_findwords = st.sidebar.multiselect("Выберите не менее трех слов для поиска в порядке их важности",(new_gr_words))
+        if sel_findwords and len(sel_findwords)>=3:
             but_find=st.sidebar.button("Начать поиск сообщений")  
             if but_find:
-                progress_bar = st.sidebar.progress(0)             
+                progress_bar = st.progress(0)             
                 srch_mes=[]
                 cntmes=len(all_mes)
-                delta=(cntmes//10)
-                curdelta=delta
-                k=0
-                for i in range(cntmes):
+                if cntmes>=100: delta=(cntmes//10)
+                else: delta=100//cntmes
+                curdelta=0
+                sel_data=[]
+                dbeg=""
+                dend=""
+                k=1
+                for i in range(len(all_mes)):
                     if i>curdelta:
                         curdelta+=delta
-                        progress_bar.progress(k*10)
-                    if len(list(set(all_mes[i])&set(sel_findwords)))>0:
-                        #st.text(all_mes[i])
-                        #st.text("-----")
-                        #st.text(cl_data[i])
-                        #st.text("*************************************")
-                        srch_mes.append("("+str(i)+")  *** "+cl_data[i])
-                             
+                        if curdelta<100: progress_bar.progress(curdelta)
+                        else:
+                           progress_bar.progress(100)
+                           curdelta=1000000
+                    
+                    tmp_sel_findwords=sel_findwords.copy()
+                    sel_findwords=[]
+                    for kwd in tmp_sel_findwords:
+                        kwd=kwd.replace('"','',2)
+                        sel_findwords.append(kwd)
+                                            
+                    keywrd=list(set(all_mes[i])&set(sel_findwords)) 
+                    if len(keywrd)>0:
+                        text_tmp=str(k)+" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) \n"
+                        srch_mes.append(text_tmp+"                  "+cl_data[i])
+                        sel_data.append(all_mes[i])
+                        if k==1: dbeg=str(cl_date[i])
+                        dend=str(cl_date[i])
+                        k+=1
+                                                
+                #******************************************************************
+                w2vec=word2vec(sel_data, sel_findwords, filename)
+                w2vec.start_word_2_vec() 
+                #******************************************************************                      
+                text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отобранные по ключевым словам сообщения</p>'
+                st.markdown(text_2, unsafe_allow_html=True)
+                text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(srch_mes))+" сообщений"
+                text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 20px;">'+text_2+'</p>'
+                st.markdown(text_2, unsafe_allow_html=True)
                 for mes in srch_mes:
-                    st.text(mes)
-                    st.text("*************************************")
+                    st.info(mes)
                 if len(srch_mes)==0:
-                    st.text("Сообщения не найдены")                
+                    st.error("Сообщения не найдены") 
+
+def myhelp():
+    st.text("HELP")  
+
 app = MultiApp()
-app.add_app("Профиль", profil)
-app.add_app("Поиск", search)
+app.add_app("Создание корпуса", corpus)
+app.add_app("Создание профиля", profil)
+app.add_app("Отбор и анализ сообщений", search)
+app.add_app("Инструкция", myhelp)
 app.run()
 
 

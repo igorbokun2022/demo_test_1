@@ -6,8 +6,13 @@ numpy
 matplotlib
 nltk
 pillow
+io
 openpyxl
 
 telethon
 datetime
 asyncio
+
+gensim.models.word2vec
+seaborn
+sklearn.manifold
