@@ -1,4 +1,4 @@
-import streamlit as st
+#import streamlit as st
 import pandas as pd
 from pymorphy2 import MorphAnalyzer
 from gensim import models, corpora
