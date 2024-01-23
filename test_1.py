@@ -19,6 +19,8 @@ from gensim.models.word2vec import Word2Vec
 import seaborn as sns
 from sklearn.manifold import TSNE
 
+import operator
+
 cl_mas_data=[]
 cl_mas_date=[]
 
@@ -32,11 +34,24 @@ all_mes_words=[]
 # получен  запросом - await client.start(phone=phone, code_callback=code_callback)
 max_posts=1000
 
-stemmer=nltk.stem.SnowballStemmer(language="russian")
+#stemmer=nltk.stem.SnowballStemmer(language="russian")
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
 #*****************************************************************
+def read_excel():
+    #*************************************
+    df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
+    mas_data = list(df.iloc[0:,0])
+    cl_mas_data =[]
+    for mes in mas_data:
+        strmes=str(mes)
+        if len(strmes.strip())>0: cl_mas_data.append(strmes) 
+    st.text("принято сообщений канала - "+str(len(cl_mas_data)))
+    #*************************************
+    cl_mas_date=[]
+    return cl_mas_data, cl_mas_date
+
 async def work(filename, cnt_days):
     
     api_id = 16387030
@@ -44,7 +59,7 @@ async def work(filename, cnt_days):
     ses_name='telemesmonitor'
     phone='+998909790855'
     code='72069'    
-    cnt_mes=500    
+    cnt_mes=1500    
     cdays=int(cnt_days)
     date_end=datetime.date.today()
     date_beg=date_end-datetime.timedelta(days=cdays)
@@ -81,7 +96,7 @@ async def work(filename, cnt_days):
             #st.text(str(mes_date)) 
             mes=message.message
             if isinstance(mes,str):
-                cl_mas_data.append(mes) 
+                if len(mes.strip())>0: cl_mas_data.append(mes) 
                 #st.text(mes)
         
     await client.disconnect()
@@ -89,18 +104,7 @@ async def work(filename, cnt_days):
     text_2="Отобрано "+str(len(cl_mas_data))+" сообщений в диапазоне "+str(date_beg)+" - "+str(date_end)
     text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 16px;">'+text_2+'</p>'
     st.markdown(text_2, unsafe_allow_html=True)
-
-    
-    #*************************************
-    #df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
-    #df = pd.read_excel('postnews1.xlsx')
-    #df.columns=['A']
-    #cl_mas_data = list(df['A'])
-    #st.text("принято сообщений канала - "+str(len(cl_mas_data)))
-    #*************************************
-    
-    #st.text("len="+str(len(cl_mas_data)))    
-     
+ 
     return cl_mas_data, cl_mas_date
         
 def code_callback():
@@ -117,11 +121,11 @@ class word2vec(object):
         self.texts=texts
         self.nkw=nkw
         self.filename=filename
-                
+        self.wrds=[]
+        self.cods=[]   
+        self.wrdcod=[]        
+        
     def view_word2vec(self,model, word, list_names):
-        """Plot in seaborn the results from the t-SNE dimensionality reduction 
-        algorithm of the vectors of a query word,
-        its list of most similar words, and a list of words."""
         vectors_words = [model.wv.word_vec(word)]
         word_labels = [word]
         color_list = ['red']
@@ -131,8 +135,6 @@ class word2vec(object):
             vectors_words.append(wrd_vector)
             word_labels.append(wrd_score[0])
             color_list.append('blue')
-        # adds the vector for each of the words from list_names to the array
-        #for nm in list_names: st.text(nm)
         
         for wrd in list_names:
             wrd_vector = model.wv.word_vec(wrd)
@@ -170,13 +172,23 @@ class word2vec(object):
         ).set_size(15)
         mplt.pyplot.xlim(Y[:, 0].min()-50, Y[:, 0].max()+50)
         mplt.pyplot.ylim(Y[:, 1].min()-50, Y[:, 1].max()+50)
-        mplt.pyplot.title('Визуализация контекстной близости выбранных слов к базовому слову <{}>'.format(word.title()))
+        mplt.pyplot.title('Визуализация контекстной близости выбранных и других слов к базовому слову <{}>'.format(word.title()))
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         st.image(buf,60)
         
-
+        add_wrds=model.wv.most_similar(positive=word)
+        for mes in add_wrds:
+            st.info(mes)      
+                
+        if len(add_wrds)>3: add_wrds=add_wrds[0:3] 
+                
+        for i in range(len(add_wrds)):
+            self.wrdcod.append(add_wrds[i])
+            self.wrds.append(add_wrds[i][0])
+            self.cods.append(add_wrds[i][1])
+                                    
     def start_word_2_vec(self):
         nkw=self.nkw
         texts=self.texts
@@ -196,9 +208,9 @@ class word2vec(object):
         #st.text("**********************************************************")
 
         w2v_model = Word2Vec(
-        min_count=10,
-        window=2,
-        vector_size=300,
+        min_count=2,
+        window=10,
+        vector_size=50,
         negative=10,
         alpha=0.03,
         min_alpha=0.0007,
@@ -226,7 +238,7 @@ class LDA(object):
         self.list_lda=[]
         self.gr_wrd=[]
         self.lda_analysis(num_topics,num_words,input_text,nm_chan)
-       
+              
     # Предварительная обработка предложений
     def lda_analysis(self,num_topics,num_words,tokens,nm_chan):
         
@@ -238,11 +250,11 @@ class LDA(object):
         #print(dict_tokens)
         # Создание терм-документной матрицы
         doc_term_mat = [dict_tokens.doc2bow(token) for token in tokens]
-    
+         
         #*********************************************************************
         # Генерирование LDА-модели
         ldamodel = models.ldamodel.LdaModel(doc_term_mat, num_topics=num_topics, id2word=dict_tokens, passes=25)
-    
+        
         lst_frm=[]
         new_words=[]
         maxval=0
@@ -378,11 +390,12 @@ class LDA(object):
         
         return 
 
+#*****************************************************************
 
 class Prepare(object):    
     
     def __init__(self, mas, del_words, minf, maxf):
-        self.stemmer=stemmer 
+        #self.stemmer=stemmer 
         self.ru_stopwords = stopwords
         self.morph = morph 
         self.patterns = "[A-Za-z0-9!#$%&'()*+,./:;<=>?@[\]^_`{|}~—\"\-]+"
@@ -398,14 +411,15 @@ class Prepare(object):
         #new_word=re.sub(self.patterns, ' ', new_word) 
         #new_word=new_word.translate(new_word,self.patterns)
         new_word=new_word.lower()
-        new_word=stemmer.stem(new_word) 
+        #new_word=stemmer.stem(new_word)
+        #new_word=Porter.stem(u(new_word))
         
         if new_word not in self.ru_stopwords and new_word not in self.del_words:  
             if len(new_word)>3:
                 if 'NOUN' in morph.tag(new_word)[0]:
                     #print("("+old_word+") = "+new_word)
                     #print("*****************")             
-                    return new_word            
+                    return morph.parse(new_word)[0].normal_form            
         return " "     
     
 #**********************************************************    
@@ -528,7 +542,6 @@ st.header('Web-сервис: тематичеcкий онлайн анализ �
 img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
 #img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
-
     
 def corpus():
 
@@ -543,18 +556,23 @@ def corpus():
     maxf=float(max_tfidf)
    
     allmes=[]
+    mas_date=[]
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
-               
-        mas_date=[]
-        try:
-            asyncio.run(work(filename, cnt_days))            
+        flagLocal=True 
+        if flagLocal==True:
+            cl_mas_data, cl_mas_date = read_excel()
+            st.text("len_cl_mas_data="+str(len(cl_mas_data)))
             st.session_state.cl_mas_data=cl_mas_data
             st.session_state.cl_mas_date=cl_mas_date
-        except: 
-            st.error("ошибка чтения канала!")
+        else:
+            try:
+                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days))            
+                st.session_state.cl_mas_data=cl_mas_data
+                st.session_state.cl_mas_date=cl_mas_date
+            except: 
+                st.error("ошибка чтения канала!")
         
-        #st.text("len="+str(len(cl_mas_data)))
         #for mes in cl_mas_data:
         #    st.text(mes)
             
@@ -562,7 +580,7 @@ def corpus():
         #fig, listp, allmes =start_corpus(filename, minf, maxf)
         st.session_state.sent_words=sent_words
         
-        
+        #st.text(""+str(len(allmes)))
         if len(allmes)>0:
             st.info("3. Корпус создан. Вывод гистограммы")
             st.image(buf,60)
@@ -614,9 +632,9 @@ def search():
     cl_data=st.session_state.cl_mas_data
     cl_date=st.session_state.cl_mas_date
     
-    #for i in range(len(gr_wrd)):
-    #        for j in range(len(gr_wrd[i])):
-    #            st.text(str(i)+"/"+str(j)+"/"+gr_wrd[i][j])
+    #for i in range(len(cl_data)):
+    #    st.info(cl_data[i])
+    #    st.info(all_mes[i])
     
     if len(gr_wrd)==0: 
         st.error("Ошибка! Тематический профиль не создан.")
@@ -631,8 +649,8 @@ def search():
         old_gr_words=gr_wrd[int(sel_findgroup)]
         for curw in old_gr_words:
             new_gr_words.append(curw)
-        sel_findwords = st.sidebar.multiselect("Выберите не менее трех слов для поиска в порядке их важности",(new_gr_words))
-        if sel_findwords and len(sel_findwords)>=3:
+        sel_findwords = st.sidebar.multiselect("Выберите слова для поиска в порядке их важности (для анализа связанности - выберите не менее трех слов)",(new_gr_words))
+        if sel_findwords:
             but_find=st.sidebar.button("Начать поиск сообщений")  
             if but_find:
                 progress_bar = st.progress(0)             
@@ -645,6 +663,7 @@ def search():
                 dbeg=""
                 dend=""
                 k=1
+                cod_mes=[]
                 for i in range(len(all_mes)):
                     if i>curdelta:
                         curdelta+=delta
@@ -659,26 +678,77 @@ def search():
                         kwd=kwd.replace('"','',2)
                         sel_findwords.append(kwd)
                                             
-                    keywrd=list(set(all_mes[i])&set(sel_findwords)) 
+                    keywrd=list(set(all_mes[i])&set(sel_findwords))
+                                           
                     if len(keywrd)>0:
-                        text_tmp=str(k)+" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) \n"
-                        srch_mes.append(text_tmp+"                  "+cl_data[i])
+                        text_tmp=str(k)+" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) ***** "
+                        text_tmp=text_tmp+"                  "+cl_data[i]
+                        srch_mes.append(text_tmp)
                         sel_data.append(all_mes[i])
                         if k==1: dbeg=str(cl_date[i])
                         dend=str(cl_date[i])
+                        #st.text("*************")
+                        #st.text(keywrd)
+                        maxcode=0
+                        curcode=0
+                        for j in range(len(sel_findwords)-1,-1,-1):
+                            #st.text(str(j)+"----------------"+sel_findwords[j])
+                            for jj in range(len(keywrd)):
+                                #st.text(str(jj)+"-"+keywrd[jj])
+                                if sel_findwords[j]==keywrd[jj]:
+                                    #st.text("code="+str(len(sel_findwords)-1-j))
+                                    #st.text("*************")
+                                    curcode=len(sel_findwords)-1-j
+                                    if curcode>maxcode: maxcode=curcode
+                        cod_mes.append([text_tmp,maxcode])        
+                                    
                         k+=1
                                                 
                 #******************************************************************
-                w2vec=word2vec(sel_data, sel_findwords, filename)
-                w2vec.start_word_2_vec() 
+                wrd_cods=[]
+                if len(sel_findwords)>=3:
+                    w2vec=word2vec(sel_data, sel_findwords, filename)
+                    w2vec.start_word_2_vec()
+                    for wcod in w2vec.wrdcod:
+                        wrd_cods.append(wcod)
+                                       
+                    if len(w2vec.wrds)>0:
+                        dbeg=""
+                        dend=""
+                        k=0
+                        srch_mes_new=[]
+                        for i in range(len(all_mes)):
+                            keywrd=list(set(all_mes[i])&set(w2vec.wrds)) 
+                            if len(keywrd)>0:
+                                text_tmp=" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) ***** "
+                                srch_mes_new.append(text_tmp+"                  "+cl_data[i])
+                                if k==1: dbeg=str(cl_date[i])
+                                dend=str(cl_date[i])
+                                k+=1
+                        
                 #******************************************************************                      
                 text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отобранные по ключевым словам сообщения</p>'
                 st.markdown(text_2, unsafe_allow_html=True)
-                text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(srch_mes))+" сообщений"
+                text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(cod_mes))+" сообщений"
                 text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 20px;">'+text_2+'</p>'
                 st.markdown(text_2, unsafe_allow_html=True)
-                for mes in srch_mes:
-                    st.info(mes)
+                cod_mes=sorted(cod_mes, key=operator.itemgetter(1), reverse = True)
+                for mes in cod_mes:
+                    st.info(mes[0])
+                #******************************************************************    
+                text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Список слов (до трех), наиболее контекстно связанных с базовым ключевым словом</p>'
+                text_1 =text_1+'<p style="font-family:sans-serif; color:Red; font-size: 24px;">'+sel_findwords[0]+'</p>'
+                st.markdown(text_1, unsafe_allow_html=True)
+                for wcod in wrd_cods:
+                    st.info(wcod)
+                                        
+                text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Дополнительно отобранные сообщения, контекстно связанные с заданными ключевыми словами </p>'
+                st.markdown(text_2, unsafe_allow_html=True)
+                k=1
+                for mes in srch_mes_new:
+                    st.info("("+str(k)+") "+mes)
+                    k+=1
+                    
                 if len(srch_mes)==0:
                     st.error("Сообщения не найдены") 
 
