@@ -6,12 +6,11 @@ numpy
 matplotlib
 nltk
 pillow
-#io
-#openpyxl
 
-telethon
-datetime
-asyncio
+#io
+#telethon
+#datetime
+#asyncio
 
 gensim.models.word2vec
 seaborn

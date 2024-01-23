@@ -9,10 +9,10 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('punkt')
 import PIL as pil
-import io
-import asyncio
-import datetime
-from telethon import TelegramClient
+#import io
+#import asyncio
+#import datetime
+#from telethon import TelegramClient
 from multiapp import MultiApp
 
 from gensim.models.word2vec import Word2Vec
