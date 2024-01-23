@@ -6,8 +6,8 @@ numpy
 matplotlib
 nltk
 pillow
-io
-openpyxl
+#io
+#openpyxl
 
 telethon
 datetime
