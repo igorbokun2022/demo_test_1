@@ -6,6 +6,7 @@ numpy
 matplotlib
 nltk
 pillow
+openpyxl
 
 #io
 #telethon

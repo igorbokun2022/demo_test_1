@@ -9,6 +9,7 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('punkt')
 import PIL as pil
+import openpyxl
 
 #import io
 #import asyncio
