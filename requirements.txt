@@ -12,6 +12,6 @@ pillow
 #datetime
 #asyncio
 
-gensim.models.word2vec
+#gensim.models.word2vec
 seaborn
 sklearn.manifold

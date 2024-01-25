@@ -1,4 +1,4 @@
-#import streamlit as st
+import streamlit as st
 import pandas as pd
 from pymorphy2 import MorphAnalyzer
 from gensim import models, corpora
@@ -9,13 +9,14 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('punkt')
 import PIL as pil
+
 #import io
 #import asyncio
 #import datetime
 #from telethon import TelegramClient
-from multiapp import MultiApp
 
-from gensim.models.word2vec import Word2Vec
+from multiapp import MultiApp
+#from gensim.models.word2vec import Word2Vec
 import seaborn as sns
 from sklearn.manifold import TSNE
 
