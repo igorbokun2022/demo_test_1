@@ -39,10 +39,15 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
+flagLocal=False
+
 #*****************************************************************
 def read_excel():
     #*************************************
-    df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
+    if flagLocal==True:
+        df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
+    else:
+        df = pd.read_excel('postnews1.xlsx')
     mas_data = list(df.iloc[0:,0])
     cl_mas_data =[]
     for mes in mas_data:
@@ -540,8 +545,8 @@ if 'cl_mas_date' not in st.session_state:
 
 
 st.header('Web-сервис: тематичеcкий онлайн анализ контента телеграм-каналов')
-img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-#img=pil.Image.open('photo.jpg')
+if flagLocal==True:img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+else: img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
     
 def corpus():
@@ -560,7 +565,6 @@ def corpus():
     mas_date=[]
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
-        flagLocal=True 
         if flagLocal==True:
             cl_mas_data, cl_mas_date = read_excel()
             st.text("len_cl_mas_data="+str(len(cl_mas_data)))
