@@ -14,4 +14,4 @@ pillow
 
 #gensim.models.word2vec
 seaborn
-sklearn.manifold
+#sklearn.manifold

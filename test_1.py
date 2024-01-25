@@ -18,7 +18,7 @@ import PIL as pil
 from multiapp import MultiApp
 #from gensim.models.word2vec import Word2Vec
 import seaborn as sns
-from sklearn.manifold import TSNE
+#from sklearn.manifold import TSNE
 
 import operator
 
