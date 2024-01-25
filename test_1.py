@@ -565,7 +565,8 @@ def corpus():
     mas_date=[]
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
-        if flagLocal==True:
+        flagExcel=True  
+        if flagExcel==True:
             cl_mas_data, cl_mas_date = read_excel()
             st.text("len_cl_mas_data="+str(len(cl_mas_data)))
             st.session_state.cl_mas_data=cl_mas_data
