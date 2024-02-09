@@ -13,6 +13,5 @@ datetime
 asyncio
 
 seaborn
-sklearn
 operator
-
+scikit-learn
