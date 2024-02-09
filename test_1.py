@@ -11,15 +11,15 @@ nltk.download('punkt')
 import PIL as pil
 import openpyxl
 
-#import io
-#import asyncio
-#import datetime
-#from telethon import TelegramClient
+import io
+import asyncio
+import datetime
+from telethon import TelegramClient
 
 from multiapp import MultiApp
-#from gensim.models.word2vec import Word2Vec
+from gensim.models.word2vec import Word2Vec
 import seaborn as sns
-#from sklearn.manifold import TSNE
+from sklearn.manifold import TSNE
 
 import operator
 
@@ -40,7 +40,7 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=False
+flagLocal=True
 
 #*****************************************************************
 def read_excel():
@@ -65,8 +65,8 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='72069'    
-    cnt_mes=1500    
+    code='16744'    
+    cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
     date_beg=date_end-datetime.timedelta(days=cdays)
@@ -77,10 +77,11 @@ async def work(filename, cnt_days):
     try:
         client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
         #st.text("22222222222222222222222222222222222222")
-        await client.start(phone=phone, code_callback=code_callback)
+        await client.start(phone=phone, code_callback=code_callback) 
     except:
         st.error("Client create/start Error!")
-        return
+        return cl_mas_data, cl_mas_date
+        
     #st.text("33333333333333333333333333333333333333")
     
     try:
@@ -117,7 +118,7 @@ async def work(filename, cnt_days):
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='72069'
+       code='16744'
        return code
      
 #*****************************************************************
@@ -566,7 +567,7 @@ def corpus():
     mas_date=[]
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
-        flagExcel=True  
+        flagExcel=False  
         if flagExcel==True:
             cl_mas_data, cl_mas_date = read_excel()
             st.text("len_cl_mas_data="+str(len(cl_mas_data)))

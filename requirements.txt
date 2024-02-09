@@ -8,11 +8,13 @@ nltk
 pillow
 openpyxl
 
-#io
-#telethon
-#datetime
-#asyncio
+io
+telethon
+datetime
+asyncio
 
-#gensim.models.word2vec
+gensim.models.word2vec
 seaborn
-#sklearn.manifold
+sklearn.manifold
+operator
+
