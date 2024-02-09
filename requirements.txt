@@ -8,7 +8,6 @@ nltk
 pillow
 openpyxl
 
-io
 telethon
 datetime
 asyncio
