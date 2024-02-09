@@ -13,5 +13,4 @@ datetime
 asyncio
 
 seaborn
-operator
 scikit-learn
