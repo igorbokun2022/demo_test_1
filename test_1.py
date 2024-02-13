@@ -40,7 +40,7 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=False
+flagLocal=True
 
 #*****************************************************************
 def read_excel():
@@ -65,7 +65,7 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='91863'    
+    code='47336'    
     cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
@@ -118,7 +118,7 @@ async def work(filename, cnt_days):
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='91863'
+       code='47336'
        return code
      
 #*****************************************************************
