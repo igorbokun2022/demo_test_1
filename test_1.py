@@ -40,7 +40,7 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=True
+flagLocal=False
 
 #*****************************************************************
 def read_excel():
