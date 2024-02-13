@@ -77,7 +77,7 @@ async def work(filename, cnt_days):
     try:
         client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
         # #st.text("22222222222222222222222222222222222222")
-        await client.start(phone=phone, code_callback=code) 
+        await client.start(phone=phone, code_callback=code_callback) 
     except:
         st.error("Client create/start Error!")
         return cl_mas_data, cl_mas_date
