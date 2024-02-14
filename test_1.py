@@ -20,8 +20,12 @@ from multiapp import MultiApp
 from gensim.models.word2vec import Word2Vec
 import seaborn as sns
 from sklearn.manifold import TSNE
-
 import operator
+
+import httpx
+from collections import deque
+import feedparser
+
 
 cl_mas_data=[]
 cl_mas_date=[]
@@ -40,9 +44,52 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=False
+flagLocal=True
+cl_mas_data=[]
 
 #*****************************************************************
+async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=None):
+    st.info("Парсинг новостной ленты")
+    rss_link = 'https://rssexport.rbc.ru/rbcnews/news/20/full.rss'
+    max_data=20
+    max_request=10
+    cur_request=0
+    while True:
+        try:
+            response = await httpx_client.get(rss_link)
+            cur_request+=1
+        except:
+            await asyncio.sleep(10)
+            continue
+
+        feed = feedparser.parse(response.text)
+
+        for entry in feed.entries[::-1]:
+            summary = entry['summary']
+            title = entry['title']
+
+            news_text = f'{title}\n{summary}'
+
+            head = news_text[:n_test_chars].strip()
+
+            if head in posted_q:
+                continue
+
+            if send_message_func is None:
+                print(cur_request)
+                print(str(len(cl_mas_data)+1))
+                print(news_text, '\n')
+                cl_mas_data.append(news_text)
+                if len(cl_mas_data)>max_data or cur_request>max_request: return(cl_mas_data) 
+            else:
+                await send_message_func(f'rbc.ru\n{news_text}')
+
+            posted_q.appendleft(head)
+
+        await asyncio.sleep(5)
+        
+    return(cl_mas_data)
+
 def read_excel():
     #*************************************
     if flagLocal==True:
@@ -65,7 +112,7 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='84233'    
+    code='26975'    
     cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
@@ -118,7 +165,7 @@ async def work(filename, cnt_days):
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='84233'
+       code='26975'
        return code
      
 #*****************************************************************
@@ -575,7 +622,11 @@ def corpus():
             st.session_state.cl_mas_date=cl_mas_date
         else:
             try:
-                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days))     
+                #cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days))     
+                posted_q = deque(maxlen=20)
+                n_test_chars = 50
+                httpx_client = httpx.AsyncClient()
+                cl_mas_data=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
                 if len(cl_mas_data)==0: return
                 st.session_state.cl_mas_data=cl_mas_data
                 st.session_state.cl_mas_date=cl_mas_date
