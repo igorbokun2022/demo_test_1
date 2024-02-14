@@ -44,7 +44,7 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=True
+flagLocal=False
 cl_mas_data=[]
 
 #*****************************************************************
@@ -627,7 +627,7 @@ def corpus():
                 n_test_chars = 50
                 httpx_client = httpx.AsyncClient()
                 cl_mas_data=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
-                if len(cl_mas_data)==0: return
+                #if len(cl_mas_data)==0: return
                 st.session_state.cl_mas_data=cl_mas_data
                 st.session_state.cl_mas_date=cl_mas_date
             except: 
