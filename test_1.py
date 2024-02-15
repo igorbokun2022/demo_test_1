@@ -48,12 +48,12 @@ flagLocal=False
 cl_mas_data=[]
 
 #*****************************************************************
-async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=None):
-    st.info("Парсинг новостной ленты")
+async def rss_parser(httpx_client, posted_q, n_test_chars, filename, send_message_func=None): 
+    st.info("Парсинг новостной ленты "+filename)
     rss_link = 'https://rssexport.rbc.ru/rbcnews/news/20/full.rss'
     max_data=20
-    max_request=10
-    cur_request=3
+    max_request=3
+    cur_request=0
         
     while True:
         try:
@@ -78,8 +78,8 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
                 continue
 
             if send_message_func is None:
-                st.text(str(cur_request))
-                st.text(str(len(cl_mas_data)+1))
+                #st.text(str(cur_request))
+                st.info(str(len(cl_mas_data)+1))
                 st.text(news_text)
                 cl_mas_data.append(news_text)
                 cl_mas_date.append(len(cl_mas_data))
@@ -627,10 +627,10 @@ def corpus():
             posted_q = deque(maxlen=20)
             n_test_chars = 50
             httpx_client = httpx.AsyncClient()
-            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
-            st.info("************************************************")
-            st.info(cl_mas_data)
-            st.info("************************************************")
+            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, filename, n_test_chars))
+            #st.info("************************************************")
+            #st.info(cl_mas_data)
+            #st.info("************************************************")
             if len(cl_mas_data)>0:
                 st.session_state.cl_mas_data=cl_mas_data
                 st.session_state.cl_mas_date=cl_mas_date
