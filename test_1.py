@@ -621,18 +621,14 @@ def corpus():
             st.session_state.cl_mas_data=cl_mas_data
             st.session_state.cl_mas_date=cl_mas_date
         else:
-            try:
-                #cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days))     
-                posted_q = deque(maxlen=20)
-                n_test_chars = 50
-                httpx_client = httpx.AsyncClient()
-                cl_mas_data=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
-                #if len(cl_mas_data)==0: return
-                st.session_state.cl_mas_data=cl_mas_data
-                st.session_state.cl_mas_date=cl_mas_date
-            except: 
-                st.error("ошибка чтения канала!")
-        
+            posted_q = deque(maxlen=20)
+            n_test_chars = 50
+            httpx_client = httpx.AsyncClient()
+            cl_mas_data=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
+            if len(cl_mas_data)==0: return
+            st.session_state.cl_mas_data=cl_mas_data
+            st.session_state.cl_mas_date=cl_mas_date
+                    
         #for mes in cl_mas_data:
         #    st.text(mes)
             
