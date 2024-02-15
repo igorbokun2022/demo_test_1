@@ -78,7 +78,7 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
             if send_message_func is None:
                 st.text(str(cur_request))
                 st.text(str(len(cl_mas_data)+1))
-                st.text(news_text, '\n')
+                st.text(news_text)
                 cl_mas_data.append(news_text)
                 if len(cl_mas_data)>max_data or cur_request>max_request: return(cl_mas_data) 
             else:
