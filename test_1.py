@@ -53,7 +53,8 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
     rss_link = 'https://rssexport.rbc.ru/rbcnews/news/20/full.rss'
     max_data=20
     max_request=10
-    cur_request=0
+    cur_request=3
+        
     while True:
         try:
             response = await httpx_client.get(rss_link)
@@ -82,7 +83,7 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
                 st.text(news_text)
                 cl_mas_data.append(news_text)
                 cl_mas_date.append(len(cl_mas_data))
-                if len(cl_mas_data)>max_data or cur_request>max_request: return(cl_mas_data, cl_mas_date) 
+                if len(cl_mas_data)>=max_data or cur_request>max_request: return(cl_mas_data, cl_mas_date) 
             else:
                 await send_message_func(f'rbc.ru\n{news_text}')
 
