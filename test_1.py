@@ -58,6 +58,7 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
         try:
             response = await httpx_client.get(rss_link)
             cur_request+=1
+            st.text('cur_request = '+str(cur_request))
         except:
             await asyncio.sleep(10)
             continue
