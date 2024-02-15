@@ -80,7 +80,8 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
                 st.text(str(len(cl_mas_data)+1))
                 st.text(news_text)
                 cl_mas_data.append(news_text)
-                if len(cl_mas_data)>max_data or cur_request>max_request: return(cl_mas_data) 
+                cl_mas_date.append(len(cl_mas_data))
+                if len(cl_mas_data)>max_data or cur_request>max_request: return(cl_mas_data, cl_mas_date) 
             else:
                 await send_message_func(f'rbc.ru\n{news_text}')
 
@@ -88,7 +89,7 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, send_message_func=Non
 
         await asyncio.sleep(5)
         
-    return(cl_mas_data)
+    return(cl_mas_data, cl_mas_date)
 
 def read_excel():
     #*************************************
@@ -624,7 +625,10 @@ def corpus():
             posted_q = deque(maxlen=20)
             n_test_chars = 50
             httpx_client = httpx.AsyncClient()
-            cl_mas_data=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
+            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars))
+            st.info("************************************************")
+            st.info(cl_mas_data)
+            st.info("************************************************")
             if len(cl_mas_data)>0:
                 st.session_state.cl_mas_data=cl_mas_data
                 st.session_state.cl_mas_date=cl_mas_date
