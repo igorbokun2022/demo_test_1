@@ -48,12 +48,13 @@ flagLocal=False
 cl_mas_data=[]
 
 #*****************************************************************
-async def rss_parser(httpx_client, posted_q, n_test_chars, filename, send_message_func=None): 
+async def rss_parser(httpx_client, posted_q, n_test_chars, filename): 
     st.info("Парсинг новостной ленты "+filename)
     rss_link = 'https://rssexport.rbc.ru/rbcnews/news/20/full.rss'
     max_data=20
     max_request=3
     cur_request=0
+    send_message_func=None
         
     while True:
         try:
@@ -605,7 +606,6 @@ def corpus():
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
-    list_chan=["@gazetauz","@kunuzru"] 
     filename = st.sidebar.selectbox("Выберите телеграм-канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
@@ -628,7 +628,7 @@ def corpus():
             posted_q = deque(maxlen=20)
             n_test_chars = 50
             httpx_client = httpx.AsyncClient()
-            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, list_chan[filename], n_test_chars))
+            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars, filename))
             #st.info("************************************************")
             #st.info(cl_mas_data)
             #st.info("************************************************")
