@@ -606,6 +606,7 @@ def corpus():
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
+    list_chan=["rbcnews", "rbcnews"]
     filename = st.sidebar.selectbox("Выберите телеграм-канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
