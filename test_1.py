@@ -596,7 +596,7 @@ if 'cl_mas_date' not in st.session_state:
     st.session_state.cl_mas_date = []
 
 
-st.header('Web-сервис: тематичеcкий онлайн анализ контента телеграм-каналов')
+st.header('Web-сервис: тематичеcкий онлайн анализ контента yjdjcnys[каналов')
 if flagLocal==True:img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
 else: img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
@@ -605,7 +605,8 @@ def corpus():
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
-    filename = st.sidebar.selectbox("Выберите телеграм-канал",["@gazetauz","@kunuzru"])
+    list_chan=["@gazetauz","@kunuzru"] 
+    filename = st.sidebar.selectbox("Выберите телеграм-канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
@@ -627,7 +628,7 @@ def corpus():
             posted_q = deque(maxlen=20)
             n_test_chars = 50
             httpx_client = httpx.AsyncClient()
-            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, filename, n_test_chars))
+            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, list_chan[filename], n_test_chars))
             #st.info("************************************************")
             #st.info(cl_mas_data)
             #st.info("************************************************")
