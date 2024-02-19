@@ -44,7 +44,7 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=True
+flagLocal=False
 cl_mas_data=[]
 
 
