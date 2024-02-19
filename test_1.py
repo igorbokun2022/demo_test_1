@@ -44,8 +44,28 @@ max_posts=1000
 stopwords = stopwords.words('russian') 
 morph = MorphAnalyzer() 
 
-flagLocal=False
+flagLocal=True
 cl_mas_data=[]
+
+
+#*****************************************************************
+
+def check_url(url_feed): #функция получает линк на рсс ленту, возвращает        
+    # распаршенную ленту с помощью feedpaeser
+    return feedparser.parse(url_feed)  
+
+def getDescriptionsDates(url_feed): #функция для получения описания новости
+    descriptions = []
+    lenta = check_url(url_feed)
+    for item_of_news in lenta['items']:
+        descriptions.append(item_of_news ['description'])
+        
+    dates = []
+    lenta = check_url(url_feed)
+    for item_of_news in lenta['items']:
+        dates.append(item_of_news ['published'])
+        
+    return descriptions, dates
 
 #*****************************************************************
 async def rss_parser(httpx_client, posted_q, n_test_chars, filename): 
@@ -597,7 +617,7 @@ if 'cl_mas_date' not in st.session_state:
     st.session_state.cl_mas_date = []
 
 
-st.header('Web-сервис: тематичеcкий онлайн анализ контента yjdjcnys[каналов')
+st.header('Web-сервис: тематичеcкий онлайн анализ контента новостных каналов')
 if flagLocal==True:img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
 else: img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
@@ -606,8 +626,8 @@ def corpus():
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
-    list_chan=["rbcnews", "rbcnews"]
-    filename = st.sidebar.selectbox("Выберите телеграм-канал",list_chan)
+    list_chan=["https://www.kommersant.ru/RSS/news.xml", "https://lenta.ru/rss/","https://www.vesti.ru/vesti.rss"]
+    filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
@@ -617,6 +637,8 @@ def corpus():
    
     allmes=[]
     mas_date=[]
+    cl_mas_data=[]
+    cl_mas_date=[]
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
         flagExcel=False  
@@ -626,10 +648,22 @@ def corpus():
             st.session_state.cl_mas_data=cl_mas_data
             st.session_state.cl_mas_date=cl_mas_date
         else:
-            posted_q = deque(maxlen=20)
-            n_test_chars = 50
-            httpx_client = httpx.AsyncClient()
-            cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars, filename))
+            #posted_q = deque(maxlen=20)
+            #n_test_chars = 50
+            #httpx_client = httpx.AsyncClient()
+            #cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars, filename))
+            
+            #our_feeds = {'Kommersant': 'https://www.kommersant.ru/RSS/news.xml',
+            #'Lenta.ru': 'https://lenta.ru/rss/',
+            #'Vesti': 'https://www.vesti.ru/vesti.rss'} #пример словаря RSS-лент 
+            
+             
+            url=filename  
+            st.info("Парсинг новостной ленты "+url)
+            cl_mas_data, cl_mas_date = getDescriptionsDates(url) 
+            for i in range(0,len(cl_mas_data)):
+                #st.info(str(i+1)) 
+                st.text(str(i+1)+".   "+cl_mas_data[i])                
             #st.info("************************************************")
             #st.info(cl_mas_data)
             #st.info("************************************************")
