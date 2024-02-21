@@ -13,7 +13,7 @@ datetime
 asyncio
 
 seaborn
-sklearn==0.16.1
+scikit-learn>=0.16.1
 
 httpx
 feedparser
