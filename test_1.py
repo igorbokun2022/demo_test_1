@@ -420,67 +420,23 @@ class LDA(object):
             list_posts.append(str(words)+' / '+str(frequency[words]))
         #*****************************************************
         df=pd.DataFrame(lst_frm)
-        dff=df.copy() 
+        
         cols=[]
         for i in range(num_topics+1):
             if i==0: cols.append('word')
             else:    cols.append('gr-'+str(i-1))
-        df.columns=cols 
+        df.columns=cols
+        dff=df.copy()
         #***********************************
-        color_sq =  ['#eeeeeeFF','#bcbddcF0','#9e9ac8F0','#807dbaF0','#6a51a3F0','#54278fF0']
-        cnt_color=6
-        delta_color=maxval//cnt_color
-            
-        dw=0.06
-        dh=0.08
         
-        '''
-        mapsize=(60,80) 
-        fig,ax = mplt.pyplot.subplots(figsize = mapsize)
-        mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan)+ '  на основе отобранных сообщений',fontsize=68, loc='left')
-        
-        for j in range(num_topics):
-            mplt.pyplot.text(0.26+dw*j, 1.1, 'гр-'+str(j), fontsize=48, color='navy')
-    
-        mplt.pyplot.axhline(y=0.9+dh, xmin=0, xmax=1.0, color='black')
-        pr_bar0 = st.progress(0)
-        if len(new_words)>=100: delta=len(new_words)//10
-        else: delta=100//len(new_words)
-        curdelta=0
-        k=1
-        
-        for i in range(len(new_words)):
-            if i>curdelta:
-                curdelta+=delta
-                if k<10:
-                    pr_bar0.progress(k*10)
-                    k+=1
-                else:
-                    pr_bar0.progress(100)
-                    curdelta=1000000
-            mplt.pyplot.text(0, 0.91-dh*i, new_words[i], fontsize=60, color='black')
-            mplt.pyplot.axhline(y=0.9-dh*i, xmin=0, xmax=1.0, color='black')
-            for j in range(num_topics+1):
-                if j>0:
-                    lst_frm[i][j]=lst_frm[i][j]//delta_color
-                    if lst_frm[i][j]>cnt_color-1: lst_frm[i][j]=cnt_color-1
-                    xy=(0.19+dw*j, 0.9-dh*i)
-                    col=color_sq[lst_frm[i][j]]
-                
-                    mplt.pyplot.gca().add_patch(mplt.patches.Rectangle(xy, dw+0.02, dh,
-                        edgecolor='black',
-                        facecolor=col,
-                        lw=4))
-                                
-            #plt.text(x0, y0+dh*j, new_words[i], fontsize=14, color='navy')
-        '''
+        #***********************************
         mapsize=(40,50)
         fig,ax = mplt.pyplot.subplots(figsize = mapsize)
         mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=50, loc='left')
         dff = df.drop(columns='word')  
         #dff = dff.drop(index=0)
         dff.index=new_words
-        sns.set (font_scale= 5)
+        #sns.set (font_scale= 5)
         sns.set_style()
         heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5)
                
@@ -489,7 +445,7 @@ class LDA(object):
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
                     
         dff=pd.DataFrame(lst_frm)
-        dff.columns=cols
+        dff.columns=cols 
         
         #***********************************
         self.fig_lda=fig
@@ -743,7 +699,7 @@ def profil():
         st.info("1. Начался анализ слов методом латентного размещения Дирихле(LDA)")
         st.warning("Подождите ...")
         lda=LDA(sel_cntgroup,sel_cntwords,allmes,filename) 
-        st.info("2. Вывод тепловой карты (более темный цвет - более частое использование слова)")
+        st.info("2. Вывод тепловой карты (более светлый цвет - более частое использование слова)")
         st.image(lda.buf_lda,20)
         st.session_state.lda_group_words = lda.gr_wrd
         for mes in lda.list_lda:
