@@ -54,18 +54,35 @@ def check_url(url_feed): #функция получает линк на рсс �
     # распаршенную ленту с помощью feedpaeser
     return feedparser.parse(url_feed)  
 
-def getDescriptionsDates(url_feed): #функция для получения описания новости
+def getDescriptionsDates(url_feed, cntd): #функция для получения описания новости
+    
+    date_end=datetime.date.today()
+    date_beg=date_end-datetime.timedelta(days=int(cntd)) 
+    ss="Группа ноостей за "+cntd+" дней в период "+date_beg.strftime('%d %b %Y')+" - "+date_end.strftime('%d %b %Y')
+    st.info(ss)
+        
     descriptions = []
     lenta = check_url(url_feed)
     for item_of_news in lenta['items']:
         descriptions.append(item_of_news ['description'])
         
+    descriptions_filter = []
     dates = []
     lenta = check_url(url_feed)
+    i=0
     for item_of_news in lenta['items']:
-        dates.append(item_of_news ['published'])
+        #st.info(item_of_news['published'])
+        #st.info(date_beg)
+        sdate=item_of_news['published']
+        sdate=sdate[5:16]
+        cur_date=datetime.datetime.strptime(sdate, "%d %b %Y")
+        cur_date=cur_date.date()
         
-    return descriptions, dates
+        if cur_date>=date_beg and cur_date<=date_end:
+            descriptions_filter.append(descriptions[i])
+            dates.append(cur_date.strftime("%d %b %Y"))    
+        i+=1                 
+    return descriptions_filter, dates
 
 #*****************************************************************
 async def rss_parser(httpx_client, posted_q, n_test_chars, filename): 
@@ -403,6 +420,7 @@ class LDA(object):
             list_posts.append(str(words)+' / '+str(frequency[words]))
         #*****************************************************
         df=pd.DataFrame(lst_frm)
+        dff=df.copy() 
         cols=[]
         for i in range(num_topics+1):
             if i==0: cols.append('word')
@@ -415,8 +433,9 @@ class LDA(object):
             
         dw=0.06
         dh=0.08
-        mapsize=(60,80) 
         
+        '''
+        mapsize=(60,80) 
         fig,ax = mplt.pyplot.subplots(figsize = mapsize)
         mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan)+ '  на основе отобранных сообщений',fontsize=68, loc='left')
         
@@ -454,7 +473,17 @@ class LDA(object):
                         lw=4))
                                 
             #plt.text(x0, y0+dh*j, new_words[i], fontsize=14, color='navy')
-        
+        '''
+        mapsize=(40,50)
+        fig,ax = mplt.pyplot.subplots(figsize = mapsize)
+        mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=50, loc='left')
+        dff = df.drop(columns='word')  
+        #dff = dff.drop(index=0)
+        dff.index=new_words
+        sns.set (font_scale= 5)
+        sns.set_style()
+        heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5)
+               
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
@@ -660,10 +689,10 @@ def corpus():
              
             url=filename  
             st.info("Парсинг новостной ленты "+url)
-            cl_mas_data, cl_mas_date = getDescriptionsDates(url) 
+            cl_mas_data, cl_mas_date = getDescriptionsDates(url, cnt_days) 
             for i in range(0,len(cl_mas_data)):
                 #st.info(str(i+1)) 
-                st.text(str(i+1)+".   "+cl_mas_data[i])                
+                st.text(str(i+1)+".   /"+cl_mas_date[i]+"/ "+cl_mas_data[i])                
             #st.info("************************************************")
             #st.info(cl_mas_data)
             #st.info("************************************************")
