@@ -431,7 +431,7 @@ class LDA(object):
         #***********************************
         
         #***********************************
-        mapsize=(50,80)
+        mapsize=(40,60)
         fig,ax = mplt.pyplot.subplots(figsize = mapsize)
         mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=50, loc='left')
         dff = df.drop(columns='word')  
