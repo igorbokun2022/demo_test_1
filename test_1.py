@@ -222,6 +222,7 @@ class word2vec(object):
         self.wrdcod=[]        
         
     def view_word2vec(self,model, word, list_names):
+        sns.set (font_scale= 0.2) 
         vectors_words = [model.wv.word_vec(word)]
         word_labels = [word]
         color_list = ['red']
@@ -443,7 +444,6 @@ class LDA(object):
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
            
-        #sns.set (font_scale= 0.2) 
         dff=pd.DataFrame(lst_frm)
         dff.columns=cols 
         
