@@ -842,8 +842,8 @@ def myhelp():
 
 app = MultiApp()
 app.add_app("Создание корпуса", corpus)
-app.add_app("Создание профиля", profil)
-app.add_app("Отбор и анализ сообщений", search)
+app.add_app("Анализ глобального профиля", profil)
+app.add_app("Анализ локального профиля", search)
 app.add_app("Инструкция", myhelp)
 app.run()
 
