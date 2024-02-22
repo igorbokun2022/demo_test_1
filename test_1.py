@@ -222,7 +222,7 @@ class word2vec(object):
         self.wrdcod=[]        
         
     def view_word2vec(self,model, word, list_names):
-        sns.set (font_scale=1) 
+        #sns.set (font_scale=1) 
         vectors_words = [model.wv.word_vec(word)]
         word_labels = [word]
         color_list = ['red']
@@ -436,10 +436,8 @@ class LDA(object):
         mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=50, loc='left')
         dff = df.drop(columns='word')  
         dff.index=new_words
-        sns.set(font_scale=5)
-        sns.set_style()
-        heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5)
-               
+        #sns.set(font_scale=5)
+        heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True, annot_kws={"size": 60})
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
