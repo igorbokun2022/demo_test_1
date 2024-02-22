@@ -437,7 +437,7 @@ class LDA(object):
         dff = df.drop(columns='word')  
         dff.index=new_words
         sns.set(font_scale=3)
-        mplt.pyplot.rcParams.update({'font.size': 40})
+        mplt.pyplot.rcParams.update({'font.size': 60})
         heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True, annot_kws={"size": 20}, cbar=True)
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
