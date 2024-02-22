@@ -436,8 +436,8 @@ class LDA(object):
         mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=50, loc='left')
         dff = df.drop(columns='word')  
         dff.index=new_words
-        #sns.set(font_scale=5)
-        heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True, annot_kws={"size": 60})
+        sns.set(font_scale=5)
+        heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True, annot_kws={"size": 20})
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
