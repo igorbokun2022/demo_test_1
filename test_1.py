@@ -434,16 +434,16 @@ class LDA(object):
         fig,ax = mplt.pyplot.subplots(figsize = mapsize)
         mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=50, loc='left')
         dff = df.drop(columns='word')  
-        #dff = dff.drop(index=0)
         dff.index=new_words
-        #sns.set (font_scale= 5)
+        sns.set (font_scale= 5)
         sns.set_style()
         heatmap=sns.heatmap(dff, cmap='Blues_r', linewidths= 5)
                
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
-                    
+           
+        sns.set (font_scale= 0.2) 
         dff=pd.DataFrame(lst_frm)
         dff.columns=cols 
         
