@@ -443,7 +443,7 @@ class LDA(object):
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
            
-        sns.set (font_scale= 0.2) 
+        #sns.set (font_scale= 0.2) 
         dff=pd.DataFrame(lst_frm)
         dff.columns=cols 
         
