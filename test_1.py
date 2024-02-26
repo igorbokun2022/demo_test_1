@@ -318,9 +318,9 @@ class word2vec(object):
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=1000, report_delay=1)
         p=[]
         p=w2v_model.wv.most_similar(positive=[base_word])
-        #for word in p:
-        #    st.text(word)
-        #    st.text(base_word)
+        for word in p:
+            st.text(word)
+            st.text(base_word)
         self.view_word2vec(w2v_model, base_word,list_words)
         
         
@@ -602,10 +602,11 @@ if 'cl_mas_date' not in st.session_state:
 
 
 st.header('Web-сервис: тематичеcкий онлайн анализ контента новостных каналов')
-try:
-    img=pil.Image.open('photo.jpg')
-except:
-    img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
+img=pil.Image.open('photo.jpg')
+#try:
+#    img=pil.Image.open('photo.jpg')
+#except:
+#    img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
 st.sidebar.image(img, width=250)
     
 def corpus():
@@ -740,7 +741,8 @@ def search():
         if sel_findwords:
             but_find=st.sidebar.button("Начать поиск сообщений")  
             if but_find:
-                progress_bar = st.progress(0)             
+                progress_bar = st.progress(0)  
+                st.warning("Подождите ...")
                 srch_mes=[]
                 cntmes=len(all_mes)
                 if cntmes>=100: delta=(cntmes//10)
