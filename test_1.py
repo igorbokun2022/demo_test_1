@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pymorphy2 import MorphAnalyzer
-#from gensim import models, corpora
+from gensim import models, corpora
 import numpy as np
 import matplotlib as mplt
 import nltk 
