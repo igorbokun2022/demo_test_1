@@ -133,9 +133,9 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, filename):
 
 def read_excel():
     #*************************************
-    if flagLocal==True:
+    try:
         df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
-    else:
+    except:
         df = pd.read_excel('postnews1.xlsx')
     mas_data = list(df.iloc[0:,0])
     cl_mas_data =[]
@@ -602,8 +602,10 @@ if 'cl_mas_date' not in st.session_state:
 
 
 st.header('Web-сервис: тематичеcкий онлайн анализ контента новостных каналов')
-if flagLocal==True:img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
-else: img=pil.Image.open('photo.jpg')
+try:
+    img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')
+except:
+    img=pil.Image.open('photo.jpg')
 st.sidebar.image(img, width=250)
     
 def corpus():
