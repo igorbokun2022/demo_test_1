@@ -340,7 +340,7 @@ class LDA(object):
     def lda_analysis(self,num_topics,num_words,tokens,nm_chan):
         
         # выделение предложений слов с предварительной обработкой
-        st.text(tokens)
+        #st.text(tokens)
     
         # Создание словаря на основе токенизированных предложений
         dict_tokens = corpora.Dictionary(tokens) 
@@ -419,9 +419,10 @@ class LDA(object):
         frequency_list = frequency.keys()        
         for words in frequency_list:
             list_posts.append(str(words)+' / '+str(frequency[words]))
-        #*****************************************************
-        df=pd.DataFrame(lst_frm)
         
+       #*****************************************************
+        df=pd.DataFrame(lst_frm)
+               
         cols=[]
         for i in range(num_topics+1):
             if i==0: cols.append('word')
@@ -494,7 +495,7 @@ class Prepare(object):
         
         word_weight =[]
         val=[]
-        new_del_words=[]
+        new_del_words=[] 
           
         fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
         
@@ -757,7 +758,7 @@ def corpus():
          
 def profil():  
     
-    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание тематического профиля группы/слова для выбранного канала</p>'
+    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Глобальный тематический профиль -  основные слова выбранного канала<, объединенные в группы</p>>'
     st.markdown(text_1, unsafe_allow_html=True)
     
     filename=st.session_state.file_name
@@ -771,7 +772,7 @@ def profil():
     sel_cntgroup=int(sel_cntgroup)
     sel_cntwords=int(sel_cntwords)
         
-    but_lda=st.sidebar.button("Создать профиль")
+    but_lda=st.sidebar.button("Создать глобальный профиль")
     if but_lda:             
         st.info("1. Начался анализ слов методом латентного размещения Дирихле(LDA)")
         st.warning("Подождите ...")
@@ -779,13 +780,14 @@ def profil():
         st.info("2. Вывод тепловой карты (более светлый цвет - более частое использование слова)")
         st.image(lda.buf_lda,20)
         st.session_state.lda_group_words = lda.gr_wrd
+        st.session_state.buf_lda=lda.buf_lda 
         for mes in lda.list_lda:
             st.info(mes)
         #st.write(st.session_state.lda_group_words)
     
 def search():
 
-    text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отбор и анализ сообщений по ключевым словам выбранной группы</p>'
+    text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Локальный тематичсекий профиль - сообщения, содержащие ключевым словам выбранной группы</p>'
     st.markdown(text_2, unsafe_allow_html=True)    
     
     filename=st.session_state.file_name
@@ -794,18 +796,21 @@ def search():
     sent_words=st.session_state.sent_words
     cl_data=st.session_state.cl_mas_data
     cl_date=st.session_state.cl_mas_date
+    buf_lda=st.session_state.buf_lda 
     
     #for i in range(len(cl_data)):
     #    st.info(cl_data[i])
     #    st.info(all_mes[i])
     
     if len(gr_wrd)==0: 
-        st.error("Ошибка! Тематический профиль не создан.")
+        st.error("Ошибка! Глобальный тематический профиль не создан.")
         return
     
     #for curmes in lda.list_lda:
     #    st.text(curmes)
-        
+    st.info("При выборе группы и ключевых слов для локального профиля - используйте данные глобального профиля")
+    st.image(buf_lda,20)    
+    
     sel_findgroup = st.sidebar.selectbox("Выберите группу для поиска",["0","1","2","3","4","5","6","7","8","9"],index=0)
     if sel_findgroup:
         new_gr_words=[]
@@ -814,7 +819,7 @@ def search():
             new_gr_words.append(curw)
         sel_findwords = st.sidebar.multiselect("Выберите слова для поиска в порядке их важности (для анализа связанности - выберите не менее трех слов)",(new_gr_words))
         if sel_findwords:
-            but_find=st.sidebar.button("Начать поиск сообщений")  
+            but_find=st.sidebar.button("Создать локальный профиль")  
             if but_find:
                 progress_bar = st.progress(0)  
                 st.warning("Подождите ...")
@@ -869,6 +874,22 @@ def search():
                         k+=1
                                                 
                 #******************************************************************
+                text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отобранные по ключевым словам сообщения</p>'
+                st.markdown(text_2, unsafe_allow_html=True)
+                text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(cod_mes))+" сообщений"
+                text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 20px;">'+text_2+'</p>'
+                st.markdown(text_2, unsafe_allow_html=True)
+                cod_mes=sorted(cod_mes, key=operator.itemgetter(1), reverse = True)
+                for mes in cod_mes:
+                    st.info(mes[0])
+                    
+                if len(srch_mes)==0:
+                    st.error("Сообщения не найдены") 
+
+                #******************************************************************
+                # векторный анализ близости слов к выбранным
+                #******************************************************************
+                '''
                 wrd_cods=[]
                 if len(sel_findwords)>=3:
                     w2vec=word2vec(sel_data, sel_findwords, filename)
@@ -889,17 +910,7 @@ def search():
                                 if k==1: dbeg=str(cl_date[i])
                                 dend=str(cl_date[i])
                                 k+=1
-                        
-                #******************************************************************                      
-                text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отобранные по ключевым словам сообщения</p>'
-                st.markdown(text_2, unsafe_allow_html=True)
-                text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(cod_mes))+" сообщений"
-                text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 20px;">'+text_2+'</p>'
-                st.markdown(text_2, unsafe_allow_html=True)
-                cod_mes=sorted(cod_mes, key=operator.itemgetter(1), reverse = True)
-                for mes in cod_mes:
-                    st.info(mes[0])
-                #******************************************************************    
+                
                 text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Список слов (до трех), наиболее контекстно связанных с базовым ключевым словом</p>'
                 text_1 =text_1+'<p style="font-family:sans-serif; color:Red; font-size: 24px;">'+sel_findwords[0]+'</p>'
                 st.markdown(text_1, unsafe_allow_html=True)
@@ -912,10 +923,8 @@ def search():
                 for mes in srch_mes_new:
                     st.info("("+str(k)+") "+mes)
                     k+=1
-                    
-                if len(srch_mes)==0:
-                    st.error("Сообщения не найдены") 
-
+                '''    
+                
 def myhelp():
     st.text("HELP")  
 
