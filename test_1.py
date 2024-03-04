@@ -340,7 +340,7 @@ class LDA(object):
     def lda_analysis(self,num_topics,num_words,tokens,nm_chan):
         
         # выделение предложений слов с предварительной обработкой
-        #print(tokens)
+        st.text(tokens)
     
         # Создание словаря на основе токенизированных предложений
         dict_tokens = corpora.Dictionary(tokens) 
@@ -457,7 +457,7 @@ class LDA(object):
 
 class Prepare(object):    
     
-    def __init__(self, mas, del_words, minf, maxf):
+    def __init__(self, mas, del_words, minf, maxf, code_type):
         #self.stemmer=stemmer 
         self.ru_stopwords = stopwords
         self.morph = morph 
@@ -467,6 +467,7 @@ class Prepare(object):
         self.del_words=del_words
         self.minf=minf
         self.maxf=maxf
+        self.code_type=code_type
                         
     def prepareWord(self, old_word):
         new_word=old_word
@@ -489,43 +490,115 @@ class Prepare(object):
 
     def histogramm(self, all_mes_words):
     
-        st.info("2. Началось формирование гистограммы обратных частот слов в сообщениях") 
-         
-        my_dictionary = corpora.Dictionary(all_mes_words)
-        bow_corpus =[my_dictionary.doc2bow(mes, allow_update = True) for mes in all_mes_words]
-   
-        #print(bow_corpus)
-        #print("*************************************")
+        st.info("2. Началось формирование гистограммы частот слов в сообщениях") 
+        
         word_weight =[]
-        for doc in bow_corpus:
-            for id, freq in doc:
-                word_weight.append([my_dictionary[id], freq])
-        #print(word_weight)
-        #print("*************************************")
-        tfIdf = models.TfidfModel(bow_corpus, smartirs ='ntc')
-
-        weight_tfidf =[]
-        for doc in tfIdf[bow_corpus]:
-            for id, freq in doc:
-                weight_tfidf.append([my_dictionary[id], np.around(freq, decimals=3)]) 
-
-        sort_weight_tfidf=sorted(weight_tfidf,key=lambda freq: freq[1]) 
-
-        wrd=[]
         val=[]
         new_del_words=[]
-        for i in range(len(sort_weight_tfidf)):
-            curval=float(sort_weight_tfidf[i][1])
-            if curval>=self.minf and curval<self.maxf: 
-                #print(str(i))
-                #print(sort_weight_tfidf[i]) 
-                wrd.append(sort_weight_tfidf[i][0])
-                val.append(float(sort_weight_tfidf[i][1]))
-            else:
-                new_del_words.append(sort_weight_tfidf[i][0])
-        #print("*************************************")
+          
+        fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
+        
+        #*********************************************************************
+        if self.code_type=="абсолютная частота":
+            
+            my_dictionary = []
+            word_freq =[]
+                 
+            maxfreq=0
+            
+            #st.info("**************************************")
+            # создание унмкального словаря и подсчет частот слов
+            for mes in all_mes_words:
+                for word in mes:
+                    if word not in my_dictionary:
+                        my_dictionary.append(word)
+            i=0
+            for i in range(len(my_dictionary)):
+                word=my_dictionary[i]
+                freq=0
+                for j in range(len(all_mes_words)):
+                    tmes=' '.join(all_mes_words[j])
+                    if word in tmes: freq+=1 
+                word_freq.append(freq)
+                if maxfreq<freq: maxfreq=freq
+                
+            st.info('Максимальная абсолютная частота слов до фильтрации = '+str(maxfreq))
+            
+            #st.info("*********  words/freqs/deciles sorted  by freq  *****************************")
+            # создание фрейма слова-частоты с сортировкой по возрастанию частоты
+            list_tuples = list(zip( word_freq, my_dictionary))  
+            #st.info(list_tuples)
+            dfw = pd.DataFrame(list_tuples,columns=['freqs','words'])
+            dfw = dfw.sort_values(by='freqs')
+            dfw['Decile'] = pd.cut(dfw['freqs'], 10, labels= False)
+            len_dfw=len(dfw['Decile'])
+            #st.info(str(len_dfw)) 
+            #st.info(dfw)
+                       
+            sort_fwd=dfw.values.tolist()
+            #st.info(sort_fwd) 
+                        
+            #st.info("***********  word_decile 0.0 - 1.0  ***************************")
+            # нормализация к диапазону 0.0 - 1.0 
+            for i in range(len_dfw):   
+                sort_fwd[i][2]=sort_fwd[i][2]/10
+                #st.text(str(sort_fwd[i][1]+" / "+str(sort_fwd[i][0])+" / "+str(sort_fwd[i][2]))) 
+                                   
+            #st.info(sort_decile)
+            #st.info("********** filter decile/words ****************************")   
+            # удление редких и частых слов по фильтру 
+            maxfreq_filter=0  
+            #st.info("minf="+str(self.minf)+" / maxf= "+str(self.maxf))
+            for i in range(len_dfw):
+                if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
+                    val.append(sort_fwd[i][2])
+                    if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0] 
+                else:
+                    new_del_words.append(sort_fwd[i][1])
+                    #st.text('удалено слово = '+str(sort_word[i]+" / "+str(sort_freq[i])+" / "+str(word_decile[i]))) 
+                                                    
+            st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))     
+            #st.info("**************************************")    
+                                 
+                       
+        #*********************************************************************        
+        if self.code_type=="относительная частота":
+            
+            my_dictionary = corpora.Dictionary(all_mes_words)
+            bow_corpus =[my_dictionary.doc2bow(mes, allow_update = True) for mes in all_mes_words]
+   
+            #st.info(bow_corpus)
+            #st.info("*************************************")
+            for doc in bow_corpus:
+                for id, freq in doc:
+                    word_weight.append([my_dictionary[id], freq])
+            #st.info(word_weight)
+            #st.info("*************************************")
+            tfIdf = models.TfidfModel(bow_corpus, smartirs ='ntc')
 
-        fig, ax = mplt.pyplot.subplots(figsize =(10, 7)) 
+            weight_tfidf =[]
+            for doc in tfIdf[bow_corpus]:
+                for id, freq in doc:
+                    weight_tfidf.append([my_dictionary[id], np.around(freq, decimals=3)]) 
+
+            sort_weight_tfidf=sorted(weight_tfidf,key=lambda freq: freq[1]) 
+            
+            maxfreq_filter=0
+            wrd=[]
+            for i in range(len(sort_weight_tfidf)):
+                curval=float(sort_weight_tfidf[i][1])
+                if curval>=self.minf and curval<self.maxf: 
+                    #print(str(i))
+                    #print(sort_weight_tfidf[i]) 
+                    wrd.append(sort_weight_tfidf[i][0])
+                    val.append(float(sort_weight_tfidf[i][1]))
+                    if maxfreq_filter<curval: maxfreq_filter=curval
+                else:
+                    new_del_words.append(sort_weight_tfidf[i][0])
+                 
+            st.info('Максимальная относительная частота слов после фильтрации = '+str(maxfreq_filter))     
+            st.info("**************************************")
+            
         ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
@@ -540,7 +613,7 @@ class Prepare(object):
         all_mes_words=[]
         all_sent_words=[]
         all_words=[]
-        print("*************************************") 
+        st.info("*************************************") 
         for line in self.mas:  
             if len(line)<10: continue
             cur_mes_words=[]
@@ -562,25 +635,25 @@ class Prepare(object):
     
 #**********************************************************
 
-def start_corpus(mas_data, minf, maxf):    
+def start_corpus(mas_data, minf, maxf, code_type):    
     #start_corpus(file, minf, maxf):   
     #df = pd.read_excel('postnews1.xlsx')
     #df.columns=['A']
     #mas_data = list(df['A'])
             
-    prep = Prepare(mas_data, delw, minf, maxf)
+    prep = Prepare(mas_data, delw, minf, maxf, code_type)
     all_mes_words, all_sent_words, all_words, curdelw, fig, buf = prep.prepare_all()
     cur_del_words=curdelw
     corpus=all_mes_words
     
     list_posts=[]
-    list_posts.append(" *****   Информация о корпусе слов     *****")
+    list_posts.append(" *****   Информация о корпусе после удаления редких/частых слов    *****")
     list_posts.append("Всего преддложений = "+str(len(all_sent_words)))
     list_posts.append("Всего слов = "+str(len(all_words)))
     list_posts.append("Всего удалено слов = "+str(len(curdelw)))
     list_posts.append("Всего осталось слов = "+str(len(all_words)-len(curdelw)))
                  
-    return buf, fig, list_posts, all_mes_words, all_sent_words
+    return buf, fig, list_posts, all_mes_words, all_sent_words, curdelw
 
 
 #**************************************************************
@@ -602,11 +675,10 @@ if 'cl_mas_date' not in st.session_state:
 
 
 st.header('Web-сервис: тематичеcкий онлайн анализ контента новостных каналов')
-img=pil.Image.open('photo.jpg')
-#try:
-#    img=pil.Image.open('photo.jpg')
-#except:
-#    img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
+try:
+    img=pil.Image.open('photo.jpg')
+except:
+    img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
 st.sidebar.image(img, width=250)
     
 def corpus():
@@ -617,13 +689,13 @@ def corpus():
     filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
-    min_tfidf = st.sidebar.selectbox("Выберите мин. уровень обр. частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
-    max_tfidf = st.sidebar.selectbox("Выберите макс. уровень обр. частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
+    code_type = st.sidebar.selectbox("Выберите тип кодирования частоты слов",["абсолютная частота","относительная частота"],index=0)
+    min_tfidf = st.sidebar.selectbox("Выберите мин. уровень частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
+    max_tfidf = st.sidebar.selectbox("Выберите макс. уровень частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
     minf=float(min_tfidf)
     maxf=float(max_tfidf)
    
     allmes=[]
-    mas_date=[]
     cl_mas_data=[]
     cl_mas_date=[]
     but_corpus=st.sidebar.button("Создать корпус")
@@ -643,28 +715,18 @@ def corpus():
             #our_feeds = {'Kommersant': 'https://www.kommersant.ru/RSS/news.xml',
             #'Lenta.ru': 'https://lenta.ru/rss/',
             #'Vesti': 'https://www.vesti.ru/vesti.rss'} #пример словаря RSS-лент 
-            
-             
+                       
             url=filename  
             st.info("Парсинг новостной ленты "+url)
             cl_mas_data, cl_mas_date = getDescriptionsDates(url, cnt_days) 
-            for i in range(0,len(cl_mas_data)):
-                #st.info(str(i+1)) 
-                st.text(str(i+1)+".   /"+cl_mas_date[i]+"/ "+cl_mas_data[i])                
-            #st.info("************************************************")
-            #st.info(cl_mas_data)
-            #st.info("************************************************")
-            if len(cl_mas_data)>0:
-                st.session_state.cl_mas_data=cl_mas_data
-                st.session_state.cl_mas_date=cl_mas_date
-            else: 
-                return
+            
+            if len(cl_mas_data)==0: return
                 
                     
         #for mes in cl_mas_data:
         #    st.text(mes)
             
-        buf, fig, listp, allmes, sent_words =start_corpus(cl_mas_data, minf, maxf)
+        buf, fig, listp, allmes, sent_words, del_words = start_corpus(cl_mas_data, minf, maxf, code_type)
         #fig, listp, allmes =start_corpus(filename, minf, maxf)
         st.session_state.sent_words=sent_words
         
@@ -674,11 +736,24 @@ def corpus():
             st.image(buf,60)
             for curmes in listp:
                 st.info(curmes)
+            for i in range(0,len(cl_mas_data)):
+                #st.info(str(i+1)) 
+                st.text(str(i+1)+".   /"+cl_mas_date[i]+"/ "+cl_mas_data[i])                
         else:
             st.error("Ошибка! Корпус не создан")
-        
+    
+    all_mes_words=[]
+    for i in range(len(allmes)):
+        curmes=[]    
+        for word in allmes[i]:
+            if word not in del_words:
+                curmes.append(word)    
+        all_mes_words.append(curmes)     
+    
     st.session_state.file_name=filename
-    st.session_state.all_mes_words = allmes      
+    st.session_state.all_mes_words = all_mes_words
+    st.session_state.cl_mas_data=cl_mas_data
+    st.session_state.cl_mas_date=cl_mas_date      
          
 def profil():  
     
