@@ -494,17 +494,19 @@ class Prepare(object):
         st.info("2. Началось формирование гистограммы частот слов в сообщениях") 
         
         word_weight =[]
-        val=[]
+        new_freqs=[]
+        new_words=[]
+        new_decil=[]
         new_del_words=[] 
-          
-        fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
-        
+        val=[]
+                 
         #*********************************************************************
         if self.code_type=="абсолютная частота":
             
             my_dictionary = []
             word_freq =[]
                  
+            minfreq=1000000
             maxfreq=0
             
             #st.info("**************************************")
@@ -521,8 +523,11 @@ class Prepare(object):
                     tmes=' '.join(all_mes_words[j])
                     if word in tmes: freq+=1 
                 word_freq.append(freq)
+                if minfreq>freq: minfreq=freq
                 if maxfreq<freq: maxfreq=freq
                 
+            st.warning('Исходное распределение слов по частотам до фильтрации')
+            st.info('Минимальная абсолютная частота слов до фильтрации = '+str(minfreq))
             st.info('Максимальная абсолютная частота слов до фильтрации = '+str(maxfreq))
             
             #st.info("*********  words/freqs/deciles sorted  by freq  *****************************")
@@ -533,8 +538,28 @@ class Prepare(object):
             dfw = dfw.sort_values(by='freqs')
             dfw['Decile'] = pd.cut(dfw['freqs'], 10, labels= False)
             len_dfw=len(dfw['Decile'])
+            
             #st.info(str(len_dfw)) 
-            #st.info(dfw)
+            cur_freq=1
+            cur_words=[]
+            #for row in dfw.itertuples():
+            #    st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile))
+            i=0  
+            for row in dfw.itertuples():
+                if row.freqs==cur_freq:
+                    cur_words.append(row.words)
+                    #st.info(cur_words)
+                else:
+                    st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
+                    st.text(cur_words)
+                    cur_freq=row.freqs
+                    cur_words=[]
+                    cur_words.append(row.words)
+                if i==len_dfw-1:    
+                    st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
+                    st.text(cur_words)
+                i+=1    
+            #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
                        
             sort_fwd=dfw.values.tolist()
             #st.info(sort_fwd) 
@@ -548,19 +573,58 @@ class Prepare(object):
             #st.info(sort_decile)
             #st.info("********** filter decile/words ****************************")   
             # удление редких и частых слов по фильтру 
+            minfreq_filter=10000000
             maxfreq_filter=0  
             #st.info("minf="+str(self.minf)+" / maxf= "+str(self.maxf))
             for i in range(len_dfw):
                 if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
+                    new_freqs.append(sort_fwd[i][0]) 
+                    new_words.append(sort_fwd[i][1])
                     val.append(sort_fwd[i][2])
-                    if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0] 
+                    if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
+                    if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
                 else:
                     new_del_words.append(sort_fwd[i][1])
                     #st.text('удалено слово = '+str(sort_word[i]+" / "+str(sort_freq[i])+" / "+str(word_decile[i]))) 
-                                                    
-            st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))     
+            st.warning('Диапазон частот слов после фильтрации')                                        
+            st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter))
+            st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))
             #st.info("**************************************")    
-                                 
+            #**********************************************************
+            # вывод гистогаммы частот слов
+            #**********************************************************
+            sort_freqs=sorted(new_freqs,reverse=False)
+            #st.info(sort_freqs)
+            new_freqs_words=[]
+            cur_freq=sort_freqs[0]
+            sum_freq=0
+        
+            for i in range(len(sort_freqs)):
+                if sort_freqs[i]==freq: sum_freq+=sort_freqs[i]
+                else:
+                    tmp=[]
+                    tmp.append(sum_freq)
+                    tmp.append(str(cur_freq))
+                    new_freqs_words.append(tmp)
+                    cur_freq=sort_freqs[i]
+                    sum_freq=sort_freqs[i]
+                if i==len(sort_freqs)-1:    
+                    tmp=[]
+                    tmp.append(sum_freq)
+                    tmp.append(str(cur_freq))
+                    new_freqs_words.append(tmp)
+                                  
+            df=pd.DataFrame(new_freqs_words, columns=["freq","word"])
+            df_freqs=df["freq"]
+            df_names=df["word"]
+        
+            fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
+            ax.barh(df_names, df_freqs, color='blue') 
+            canvas = mplt.pyplot.get_current_fig_manager().canvas
+            canvas.draw()
+            buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())               
+            st.image(buf,60)
+            #**********************************************************                     
                        
         #*********************************************************************        
         if self.code_type=="относительная частота":
@@ -586,26 +650,30 @@ class Prepare(object):
             
             maxfreq_filter=0
             wrd=[]
+           
             for i in range(len(sort_weight_tfidf)):
                 curval=float(sort_weight_tfidf[i][1])
                 if curval>=self.minf and curval<self.maxf: 
                     #print(str(i))
                     #print(sort_weight_tfidf[i]) 
                     wrd.append(sort_weight_tfidf[i][0])
-                    val.append(float(sort_weight_tfidf[i][1]))
+                    new_freqs.append(float(sort_weight_tfidf[i][1]))
+                    val.append(float(sort_weight_tfidf[i][1])) 
                     if maxfreq_filter<curval: maxfreq_filter=curval
                 else:
                     new_del_words.append(sort_weight_tfidf[i][0])
                  
             st.info('Максимальная относительная частота слов после фильтрации = '+str(maxfreq_filter))     
             st.info("**************************************")
-            
+        
+        fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
         ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-            
-        return new_del_words, fig, buf
+        st.image(buf,60)
+        
+        return new_del_words, fig, buf, val
 
 #**********************************************************
         
@@ -614,7 +682,7 @@ class Prepare(object):
         all_mes_words=[]
         all_sent_words=[]
         all_words=[]
-        st.info("*************************************") 
+         
         for line in self.mas:  
             if len(line)<10: continue
             cur_mes_words=[]
@@ -630,8 +698,8 @@ class Prepare(object):
                 all_sent_words.append(cur_sent_words)        
             all_mes_words.append(cur_mes_words)    
 
-        new_del_words, fig, buf=self.histogramm(all_mes_words)
-        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf
+        new_del_words, fig, buf, val=self.histogramm(all_mes_words)
+        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf, val
     
     
 #**********************************************************
@@ -643,17 +711,19 @@ def start_corpus(mas_data, minf, maxf, code_type):
     #mas_data = list(df['A'])
             
     prep = Prepare(mas_data, delw, minf, maxf, code_type)
-    all_mes_words, all_sent_words, all_words, curdelw, fig, buf = prep.prepare_all()
-    cur_del_words=curdelw
-    corpus=all_mes_words
+    all_mes_words, all_sent_words, all_words, curdelw, fig, buf, val = prep.prepare_all()
     
     list_posts=[]
     list_posts.append(" *****   Информация о корпусе после удаления редких/частых слов    *****")
+    list_posts.append("Всего сообщений = "+str(len(mas_data)))
     list_posts.append("Всего преддложений = "+str(len(all_sent_words)))
     list_posts.append("Всего слов = "+str(len(all_words)))
-    list_posts.append("Всего удалено слов = "+str(len(curdelw)))
-    list_posts.append("Всего осталось слов = "+str(len(all_words)-len(curdelw)))
-                 
+    list_posts.append("Всего удалено слов по фильтру = "+str(len(curdelw)))
+    list_posts.append("Всего осталось слов после фильтрации = "+str(len(all_words)-len(curdelw)))
+    list_posts.append("Всего осталось уникальных слов после фильтрации = "+str(len(val)))
+    
+    
+             
     return buf, fig, list_posts, all_mes_words, all_sent_words, curdelw
 
 
@@ -733,8 +803,8 @@ def corpus():
         
         #st.text(""+str(len(allmes)))
         if len(allmes)>0:
-            st.info("3. Корпус создан. Вывод гистограммы")
-            st.image(buf,60)
+            st.info("3. Корпус создан")
+           
             for curmes in listp:
                 st.info(curmes)
             for i in range(0,len(cl_mas_data)):
