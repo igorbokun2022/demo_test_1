@@ -9,9 +9,7 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('punkt')
 import PIL as pil
-import openpyxl
 
-import io
 import asyncio
 import datetime
 from telethon import TelegramClient
@@ -22,9 +20,13 @@ import seaborn as sns
 from sklearn.manifold import TSNE
 import operator
 
-import httpx
-from collections import deque
 import feedparser
+#**********************************
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+#from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+#from sklearn.cluster import KMeans
+#from sklearn.decomposition import PCA
+#**********************************
 
 
 cl_mas_data=[]
@@ -347,7 +349,7 @@ class LDA(object):
         #print(dict_tokens)
         # Создание терм-документной матрицы
         doc_term_mat = [dict_tokens.doc2bow(token) for token in tokens]
-         
+                          
         #*********************************************************************
         # Генерирование LDА-модели
         ldamodel = models.ldamodel.LdaModel(doc_term_mat, num_topics=num_topics, id2word=dict_tokens, passes=25)
@@ -365,7 +367,7 @@ class LDA(object):
         k=0    
         for item in ldamodel.print_topics(num_topics=num_topics, num_words=num_words):
             k+=1
-            list_posts.append('\n ******************************************                Категория - '+str(item[0]))
+            #list_posts.append('\n ******************************************                Категория - '+str(item[0]))
             # Вывод представительных слов вместе с их
             # относительными вкладами
             list_of_strings = item[1].split(' + ')
@@ -399,7 +401,7 @@ class LDA(object):
                         lst_frm[ind_word][int(item[0]+1)]=int(float(weight) * 1000)
                         if round(float(weight) * 1000,0)>maxval: maxval=int(float(weight) * 1000)
                 #*****************************************************        
-                list_posts.append(str(k-1)+'/'+str(l)+' --- '+word+' --- '+str(round(float(weight) * 100,2) + 1%1)+'('+str(lst_frm[ind_word][int(item[0]+1)])+')')
+                #list_posts.append(str(k-1)+'/'+str(l)+' --- '+word+' --- '+str(round(float(weight) * 100,2) + 1%1)+'('+str(lst_frm[ind_word][int(item[0]+1)])+')')
                 cur_wrd.append(word)
                 
             self.gr_wrd.append(cur_wrd)
@@ -538,29 +540,8 @@ class Prepare(object):
             dfw = dfw.sort_values(by='freqs')
             dfw['Decile'] = pd.cut(dfw['freqs'], 10, labels= False)
             len_dfw=len(dfw['Decile'])
-            
             #st.info(str(len_dfw)) 
-            cur_freq=1
-            cur_words=[]
-            #for row in dfw.itertuples():
-            #    st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile))
-            i=0  
-            for row in dfw.itertuples():
-                if row.freqs==cur_freq:
-                    cur_words.append(row.words)
-                    #st.info(cur_words)
-                else:
-                    st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
-                    st.text(cur_words)
-                    cur_freq=row.freqs
-                    cur_words=[]
-                    cur_words.append(row.words)
-                if i==len_dfw-1:    
-                    st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
-                    st.text(cur_words)
-                i+=1    
-            #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
-                       
+                                   
             sort_fwd=dfw.values.tolist()
             #st.info(sort_fwd) 
                         
@@ -624,8 +605,35 @@ class Prepare(object):
             canvas.draw()
             buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())               
             st.image(buf,60)
+            
             #**********************************************************                     
-                       
+            
+            cur_freq=1
+            cur_words=[]
+            #for row in dfw.itertuples():
+            #    st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile))
+            i=0  
+            for row in dfw.itertuples():
+                if row.freqs<minfreq_filter or row.freqs>maxfreq_filter:
+                    continue  
+                if row.freqs==cur_freq:
+                    cur_words.append(row.words)
+                    #st.info(cur_words)
+                else:
+                    if len(cur_words)>0:
+                        st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
+                        st.text(cur_words)
+                    cur_freq=row.freqs
+                    cur_words=[]
+                    cur_words.append(row.words)
+                if i==len_dfw-1:    
+                    st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
+                    st.text(cur_words)
+                i+=1    
+            #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
+            
+            
+            
         #*********************************************************************        
         if self.code_type=="относительная частота":
             
@@ -751,6 +759,9 @@ try:
 except:
     img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
 st.sidebar.image(img, width=250)
+
+url = "lda.html"
+st.write("Визуализация результатов тематического анлиза методом латентного размещения Дирихле [link](%s)" % url)
     
 def corpus():
 
@@ -820,6 +831,8 @@ def corpus():
             if word not in del_words:
                 curmes.append(word)    
         all_mes_words.append(curmes)     
+        
+    #cluster_doc2vec(all_mes_words)    
     
     st.session_state.file_name=filename
     st.session_state.all_mes_words = all_mes_words
@@ -833,6 +846,8 @@ def profil():
     
     filename=st.session_state.file_name
     allmes=st.session_state.all_mes_words
+    cl_mas_data=st.session_state.cl_mas_data
+    
     if len(allmes)==0:
         st.error("Корпус не создан!")
         return
@@ -854,7 +869,61 @@ def profil():
         for mes in lda.list_lda:
             st.info(mes)
         #st.write(st.session_state.lda_group_words)
-    
+        #*****************************************************************
+        # Биграмы/триграмы, связанные с ключевыми словами профиля 
+        #****************************************************************
+        text_all=''
+        for line in cl_mas_data: 
+            text_all=text_all+' '+"".join(line)
+
+        df1 = pd.DataFrame({'text': [text_all]})     
+        vectorizer = CountVectorizer(ngram_range=(2, 3))  
+        doc_vec = vectorizer.fit_transform(df1.iloc[0])
+        t_freqs=doc_vec.toarray().transpose().tolist()
+        freqs=[]
+        for i in range(len(t_freqs)): freqs.append(t_freqs[i][0])
+        names=vectorizer.get_feature_names()
+                    
+        lst_bigram=[]
+        for i in range(len(freqs)):
+            if len(names[i])==0: continue
+            t=[]
+            t.append(names[i])
+            t.append(freqs[i])
+            lst_bigram.append(t)
+        df2 = pd.DataFrame(lst_bigram, columns=['2_3_gram', 'freq'])  
+        sorted_df = df2.sort_values(by='freq', ascending=False)
+        #***********************************
+        st.warning('Тематическая группы, их ключевые слова и вязанные биграммы/триграммы')
+        #st.info(sorted_df)
+        min_freq=5
+                                                
+        for i in range(sel_cntgroup):
+            st.warning('Тематическая группа - '+str(i))
+            for ii in range(sel_cntwords): 
+                st.info(str(ii)+". "+lda.gr_wrd[i][ii])
+                k=0
+                j=0
+                cur_bigrams=[] 
+                while j<len(sorted_df) and k<9 and sorted_df.iloc[j,1]>=min_freq:
+                    ngr_lst=sorted_df.iloc[j,0].split()
+                    ngr_new=[] 
+                    for wrd in ngr_lst:
+                        if 'NOUN' in morph.tag(wrd)[0]: ngr_new.append(morph.parse(wrd)[0].normal_form)
+                            
+                    #st.info(lda.gr_wrd[i][ii])
+                    wrd=lda.gr_wrd[i][ii]
+                    wrd=wrd[1:len(wrd)-1]
+                    #st.info(wrd)
+                    if wrd in ngr_new:
+                        text=sorted_df.iloc[j,0]+"("+str(sorted_df.iloc[j,1])+")"
+                        cur_bigrams.append(text)
+                        k+=1
+                    j+=1
+                if len(cur_bigrams)>0: st.info(cur_bigrams)
+        
+        
+        
 def search():
 
     text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Локальный тематичсекий профиль - сообщения, содержащие ключевым словам выбранной группы</p>'
