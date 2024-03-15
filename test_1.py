@@ -761,7 +761,7 @@ except:
 st.sidebar.image(img, width=250)
 
 url = "https://github.com/igorbokun2022/demo_test_1/blob/main/lda.html"
-st.markdown("Визуализация результатов тематического анлиза методом латентного размещения Дирихле [link](%s)" % url)
+st.markdown("Визуализация результатов тематического анлиза методом латентного размещения Дирихле [link](%s)" % url, unsafe_allow_html=True)
 
     
 def corpus():
