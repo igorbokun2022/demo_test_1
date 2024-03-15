@@ -760,7 +760,7 @@ except:
     img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
 st.sidebar.image(img, width=250)
 
-url = "lda.html"
+url = "https://igorbokun2022-demo-test-1-test-1/lda.html"
 st.link_button("Визуализация результатов тематического анлиза методом латентного размещения Дирихле", url)
     
 def corpus():
