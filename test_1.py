@@ -760,8 +760,8 @@ except:
     img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
 st.sidebar.image(img, width=250)
 
-url = "/lda.html"
-#url = "https://github.com/igorbokun2022/demo_test_1/blob/main/lda.html"
+#url = "/lda.html"
+url = "https://github.com/igorbokun2022/demo_test_1/blob/main/lda.html"
 st.markdown("Визуализация результатов тематического анлиза методом латентного размещения Дирихле [link](%s)" % url, unsafe_allow_html=True)
 
     
