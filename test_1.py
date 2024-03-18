@@ -1042,7 +1042,7 @@ def search():
                 #******************************************************************
                 # векторный анализ близости слов к выбранным
                 #******************************************************************
-                '''
+                #'''
                 wrd_cods=[]
                 if len(sel_findwords)>=3:
                     w2vec=word2vec(sel_data, sel_findwords, filename)
@@ -1076,7 +1076,7 @@ def search():
                 for mes in srch_mes_new:
                     st.info("("+str(k)+") "+mes)
                     k+=1
-                '''    
+                #'''    
                 
 def myhelp():
     st.text("HELP") 
