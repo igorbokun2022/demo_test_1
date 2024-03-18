@@ -19,5 +19,5 @@ httpx
 feedparser
 
 pyLDAvis
-pyLDAvis.gensim
+pyLDAvis.gensim_models
 
