@@ -20,4 +20,3 @@ feedparser
 
 sklearn.feature_extraction.text 
 pyLDAvis
-pyLDAvis.gensim
