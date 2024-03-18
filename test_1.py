@@ -28,7 +28,7 @@ import feedparser
 #from sklearn.decomposition import PCA
 #**********************************
 import pyLDAvis
-import pyLDAvis.gensim
+import pyLDAvis.gensim_models
 
 
 cl_mas_data=[]
