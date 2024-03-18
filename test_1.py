@@ -27,6 +27,8 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 #from sklearn.cluster import KMeans
 #from sklearn.decomposition import PCA
 #**********************************
+import pyLDAvis
+import pyLDAvis.gensim
 
 
 cl_mas_data=[]
@@ -353,7 +355,22 @@ class LDA(object):
         #*********************************************************************
         # Генерирование LDА-модели
         ldamodel = models.ldamodel.LdaModel(doc_term_mat, num_topics=num_topics, id2word=dict_tokens, passes=25)
+        #******************************************************************************************
+        #   pyLDAVis
+        #******************************************************************************************
+        lda_model = models.ldamodel.LdaModel(corpus=doc_term_mat,
+                id2word=dict_tokens,
+                num_topics=num_topics,
+                random_state=0,
+                chunksize=50,
+                alpha='auto',
+                per_word_topics=True)
+        p = pyLDAvis.gensim.prepare(lda_model, doc_term_mat, dict_tokens)
+        html_string = pyLDAvis.prepared_data_to_html(p)
+        from streamlit import components
+        components.v1.html(html_string, width=1300, height=800, scrolling=True)  
         
+        #******************************************************************************************
         lst_frm=[]
         new_words=[]
         maxval=0
@@ -759,11 +776,6 @@ try:
 except:
     img=pil.Image.open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/photo.jpg')    
 st.sidebar.image(img, width=250)
-
-#url = "/lda.html"
-url = "https://github.com/igorbokun2022/demo_test_1/blob/main/lda.html"
-st.markdown("Визуализация результатов тематического анлиза методом латентного размещения Дирихле [link](%s)" % url, unsafe_allow_html=True)
-
     
 def corpus():
 
@@ -1067,8 +1079,8 @@ def search():
                 '''    
                 
 def myhelp():
-    st.text("HELP")  
-
+    st.text("HELP") 
+   
 app = MultiApp()
 app.add_app("Создание корпуса", corpus)
 app.add_app("Анализ глобального профиля", profil)

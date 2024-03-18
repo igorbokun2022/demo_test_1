@@ -17,3 +17,7 @@ scikit-learn==1.0.2
 
 httpx
 feedparser
+
+sklearn.feature_extraction.text 
+pyLDAvis
+pyLDAvis.gensim
