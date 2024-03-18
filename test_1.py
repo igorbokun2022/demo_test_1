@@ -28,6 +28,7 @@ import feedparser
 #from sklearn.decomposition import PCA
 #**********************************
 import pyLDAvis
+import pyLDAvis.gensim
 
 
 cl_mas_data=[]
@@ -364,6 +365,7 @@ class LDA(object):
                 chunksize=50,
                 alpha='auto',
                 per_word_topics=True)
+        
         p = pyLDAvis.gensim.prepare(lda_model, doc_term_mat, dict_tokens)
         html_string = pyLDAvis.prepared_data_to_html(p)
         from streamlit import components
