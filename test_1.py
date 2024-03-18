@@ -22,10 +22,9 @@ import operator
 
 import feedparser
 #**********************************
-#from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-#from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-#from sklearn.cluster import KMeans
-#from sklearn.decomposition import PCA
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument#from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 #**********************************
 import pyLDAvis
 import pyLDAvis.gensim 

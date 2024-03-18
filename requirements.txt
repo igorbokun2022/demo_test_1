@@ -19,5 +19,7 @@ httpx
 feedparser
 
 pyLDAvis==3.4.1
+sklearn
+gensim.models.doc2vec
 
 
