@@ -24,8 +24,8 @@ import feedparser
 #**********************************
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument 
-#from sklearn.cluster import KMeans
-#from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 #**********************************
 import pyLDAvis
 import pyLDAvis.gensim 
@@ -729,6 +729,54 @@ class Prepare(object):
     
 #**********************************************************
 
+def cluster_doc2vec(all_mes_words):
+
+    documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(all_mes_words)] 
+    print(documents)
+    cnt_epochs=30
+
+    model = Doc2Vec(vector_size=300, workers=4, epochs=cnt_epochs)   
+    model.build_vocab(documents) 
+   
+    #print(model)
+    #print(len(documents))
+
+    epochs = 0
+    while epochs < cnt_epochs:
+        model.train(documents, total_examples=len(documents), epochs=cnt_epochs)  
+        epochs=epochs+1
+    kmeans_model = KMeans(n_clusters=4, init='k-means++', max_iter=100) 
+    X = kmeans_model.fit(model.dv.vectors)
+    labels=kmeans_model.labels_.tolist()
+    l = kmeans_model.fit_predict(model.dv.vectors)
+    pca = PCA(n_components=2).fit(model.dv.vectors)
+    datapoint = pca.transform(model.dv.vectors)
+
+    cnt_cluster=4
+    label1 = ["#008000", "#0000FF", "#800080","#FFFF00"]
+    color = [label1[i] for i in labels]
+
+    fig=mplt.pyplot.figure()
+    fig.set_size_inches(15,10) 
+    mplt.pyplot.scatter(datapoint[:, 0], datapoint[:, 1], c=color)
+    centroids = kmeans_model.cluster_centers_
+    centroidpoint = pca.transform(centroids)
+    mplt.pyplot.scatter(centroidpoint[:, 0], centroidpoint[:, 1], marker='^', s=150, c='#000000')
+ 
+    ax1 = mplt.pyplot.gca() 
+    ax1.set_title('Визуальная картина распределения отобранных сообщений по 4 кластерам',fontsize=14)
+    mes=[]
+    for i in range(cnt_cluster): mes.append("Кластер_"+str(i+1)) 
+
+    for i in range(cnt_cluster):
+        mplt.pyplot.text(6.0,1.0+1.0*i, mes[i].upper(), fontsize=10, color=label1[i])
+ 
+    canvas = mplt.pyplot.get_current_fig_manager().canvas
+    canvas.draw()
+    buf_d2v = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+    st.image(buf_d2v,40)
+
+
 def start_corpus(mas_data, minf, maxf, code_type):    
     #start_corpus(file, minf, maxf):   
     #df = pd.read_excel('postnews1.xlsx')
@@ -846,8 +894,6 @@ def corpus():
                 curmes.append(word)    
         all_mes_words.append(curmes)     
         
-    #cluster_doc2vec(all_mes_words)    
-    
     st.session_state.file_name=filename
     st.session_state.all_mes_words = all_mes_words
     st.session_state.cl_mas_data=cl_mas_data
@@ -855,7 +901,7 @@ def corpus():
          
 def profil():  
     
-    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Глобальный тематический профиль -  основные слова выбранного канала<, объединенные в группы</p>>'
+    text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;>Глобальный тематический профиль -  основные слова выбранного канала<, объединенные в группы</p>'
     st.markdown(text_1, unsafe_allow_html=True)
     
     filename=st.session_state.file_name
@@ -940,7 +986,7 @@ def profil():
         
 def search():
 
-    text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Локальный тематичсекий профиль - сообщения, содержащие ключевым словам выбранной группы</p>'
+    text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Локальный тематический профиль - сообщения, содержащие ключевые слова выбранной группы</p>'
     st.markdown(text_2, unsafe_allow_html=True)    
     
     filename=st.session_state.file_name
@@ -1063,7 +1109,8 @@ def search():
                                 if k==1: dbeg=str(cl_date[i])
                                 dend=str(cl_date[i])
                                 k+=1
-                
+                    cluster_doc2vec(sel_data)
+                    
                 text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Список слов (до трех), наиболее контекстно связанных с базовым ключевым словом</p>'
                 text_1 =text_1+'<p style="font-family:sans-serif; color:Red; font-size: 24px;">'+sel_findwords[0]+'</p>'
                 st.markdown(text_1, unsafe_allow_html=True)
