@@ -29,6 +29,7 @@ from sklearn.decomposition import PCA
 #**********************************
 import pyLDAvis
 import pyLDAvis.gensim 
+import xlwt  
 
 cl_mas_data=[]
 cl_mas_date=[]
@@ -59,6 +60,8 @@ def check_url(url_feed): #функция получает линк на рсс �
 
 def getDescriptionsDates(url_feed, cntd): #функция для получения описания новости
     
+    max_len_data=50
+    #----------------------------------
     date_end=datetime.date.today()
     date_beg=date_end-datetime.timedelta(days=int(cntd)) 
     ss="Группа ноостей за "+cntd+" дней в период "+date_beg.strftime('%d %b %Y')+" - "+date_end.strftime('%d %b %Y')
@@ -84,6 +87,7 @@ def getDescriptionsDates(url_feed, cntd): #функция для получен�
         if cur_date>=date_beg and cur_date<=date_end:
             descriptions_filter.append(descriptions[i])
             dates.append(cur_date.strftime("%d %b %Y"))    
+            if len(descriptions_filter)>max_len_data: break
         i+=1                 
     return descriptions_filter, dates
 
@@ -515,7 +519,6 @@ class Prepare(object):
         word_weight =[]
         new_freqs=[]
         new_words=[]
-        new_decil=[]
         new_del_words=[] 
         val=[]
                  
@@ -573,6 +576,7 @@ class Prepare(object):
             # удление редких и частых слов по фильтру 
             minfreq_filter=10000000
             maxfreq_filter=0  
+            #k=0
             #st.info("minf="+str(self.minf)+" / maxf= "+str(self.maxf))
             for i in range(len_dfw):
                 if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
@@ -581,9 +585,13 @@ class Prepare(object):
                     val.append(sort_fwd[i][2])
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
+                    #st.text('добавлено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))
+                    #k+=1
                 else:
                     new_del_words.append(sort_fwd[i][1])
-                    #st.text('удалено слово = '+str(sort_word[i]+" / "+str(sort_freq[i])+" / "+str(word_decile[i]))) 
+                    #st.text('удалено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))   
+                    #k+=1
+            #st.warning('Число оставшихся и удаленных слов = '+str(k))        
             st.warning('Диапазон частот слов после фильтрации')                                        
             st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter))
             st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))
@@ -625,14 +633,21 @@ class Prepare(object):
             
             #**********************************************************                     
             
-            cur_freq=1
+            if minfreq_filter>0.1: cur_freq=minfreq_filter 
+            else: cur_freq=1 
             cur_words=[]
             #for row in dfw.itertuples():
-            #    st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile))
+            #    if row.freqs>1:
+            #        st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile))
             i=0  
             for row in dfw.itertuples():
+                i+=1
+                #st.warning(str(i))
+                #st.warning(str(len_dfw))
                 if row.freqs<minfreq_filter or row.freqs>maxfreq_filter:
-                    continue  
+                    continue 
+                #st.info(row.freqs)
+                #st.info(cur_freq)
                 if row.freqs==cur_freq:
                     cur_words.append(row.words)
                     #st.info(cur_words)
@@ -643,10 +658,11 @@ class Prepare(object):
                     cur_freq=row.freqs
                     cur_words=[]
                     cur_words.append(row.words)
-                if i==len_dfw-1:    
-                    st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
-                    st.text(cur_words)
-                i+=1    
+                    
+            if i>=len_dfw:    
+                st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
+                st.text(cur_words)
+                    
             #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
             
             
@@ -729,7 +745,7 @@ class Prepare(object):
     
 #**********************************************************
 
-def cluster_doc2vec(all_mes_words):
+def cluster_doc2vec(sel_mas_data, all_mes_words):
 
     documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(all_mes_words)] 
     print(documents)
@@ -775,6 +791,33 @@ def cluster_doc2vec(all_mes_words):
     canvas.draw()
     buf_d2v = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
     st.image(buf_d2v,40)
+    
+    
+    cur_row=[]
+    for i in range(cnt_cluster):
+        cur_row.append(0)
+    
+    cluster_text = [0] * 500 
+    for i in range(4): cluster_text[i] = [0] * 500 
+                 
+    for i in range(len(labels)-1):
+        #wb.get_sheet(labels[i]+1).write(cur_row[labels[i]]+2, 0, mas_all[i], style0)
+        cluster_text[labels[i]][cur_row[labels[i]]]=sel_mas_data[i]   
+        cur_row[labels[i]]+=1
+       
+    all_row=0
+    for i in range(4):
+        all_row=all_row+cur_row[i]
+           
+    st.info("Распределение текстов отобранных сообщений по 4 кластерам")
+    st.info("Всего отобрано "+str(all_row)+" сообщений")
+    
+    for i in range(4):
+        st.warning("Кластер_"+str(i+1) + "/ сообщений = "+str(cur_row[i])) 
+        st.info("**********************************************************************")
+        for j in range(cur_row[i]):
+            st.text(" ***  сообщение -"+str(j+1)+"    "+cluster_text[i][j]) 
+    
 
 
 def start_corpus(mas_data, minf, maxf, code_type):    
@@ -794,11 +837,156 @@ def start_corpus(mas_data, minf, maxf, code_type):
     list_posts.append("Всего удалено слов по фильтру = "+str(len(curdelw)))
     list_posts.append("Всего осталось слов после фильтрации = "+str(len(all_words)-len(curdelw)))
     list_posts.append("Всего осталось уникальных слов после фильтрации = "+str(len(val)))
-    
-    
-             
-    return buf, fig, list_posts, all_mes_words, all_sent_words, curdelw
+                    
+    return buf, fig, list_posts, all_mes_words, all_sent_words, curdelw, all_words 
 
+def save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words):
+    #**************************************************
+    #for w in del_words: st.info(w)
+    path='F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1' 
+    corpus_file=path+'/1_corpus.xls' 
+    # Создать новую книгу
+    wb = xlwt.Workbook()
+    # Добавить новую страниц
+    ws = wb.add_sheet('mes_words')
+    ws1 = wb.add_sheet('words_freqs')
+    ws2 = wb.add_sheet('messages')
+    ws3 = wb.add_sheet('new_mes_words')
+    ws4 = wb.add_sheet('new_unic_words')	
+	
+    #установить шрифт и стиль вывода
+    # 0-black
+    font0 = xlwt.Font()
+    font0.name = 'Times New Roman'
+    font0.colour_index = 0 # 0-0black
+    # 1-red
+    font1 = xlwt.Font()
+    font1.name = 'Times New Roman'
+    font1.colour_index = 4 
+    # 2-blue
+    font2 = xlwt.Font()
+    font2.name = 'Times New Roman'
+    font2.colour_index = 2
+    # 3-green
+    font3 = xlwt.Font()
+    font3.name = 'Times New Roman'
+    font3.colour_index = 3
+    
+    style0 = xlwt.XFStyle()
+    style0.font = font0
+    style0.alignment.horizontal='center'
+    style0.alignment.vertical='center'
+    style1 = xlwt.XFStyle()
+    style1.font = font1
+    style2 = xlwt.XFStyle()
+    style2.font = font2
+    style3 = xlwt.XFStyle()
+    style3.font = font3
+
+    ws.write(0, 0, "Содержание корпуса: слова-существительные каждого сообщения", style1)
+    for i in range(len(allmes)):
+        ws.write(i+1, 0, str(i+1), style1)
+        for j in range(len(allmes[i])):
+                ws.write(i+1, j+1, str(allmes[i][j]), style0) 
+        
+    ws1.write(0, 0, "Уникальные слова всех сообщений, отсортированные по алфавиту и по убыванию их частоты, а также удаленные слова по убыванию их частоты ", style1)
+    lst_word_freq=[]
+    sort_allwords=sorted(list(set(all_words)))
+    for i in range(len(sort_allwords)):
+        ws1.write(i+1, 0, str(i+1), style0)
+        wrd=sort_allwords[i]
+        ws1.write(i+1, 1, wrd, style1)
+        cnt=all_words.count(sort_allwords[i])
+        ws1.write(i+1, 2, cnt, style0)    
+        tmp=[]
+        tmp.append(cnt)
+        tmp.append(wrd)
+        lst_word_freq.append(tmp)
+        
+    sum_all_words_freq=0
+    cnt_long_words=0
+    df_word_freq=pd.DataFrame(lst_word_freq)
+    df_word_freq.columns=["freq", "word"]
+    sort_df_word_freq=df_word_freq.sort_values(by='freq', ascending=False)
+        
+    unic_50=[]
+    cur_freq_group=sort_df_word_freq.iloc[0,0]
+    s=str(cur_freq_group)+" / "
+    
+    for i in range(len(sort_df_word_freq)):
+        cur_freq=sort_df_word_freq.iloc[i,0]
+        cnt_long_words=cnt_long_words+1
+        ws1.write(i+1, 4, str(cur_freq), style1)
+        sum_all_words_freq=sum_all_words_freq+cur_freq
+        ws1.write(i+1, 5, sort_df_word_freq.iloc[i,1], style0)
+        if cur_freq_group==cur_freq: s=s+sort_df_word_freq.iloc[i,1]+" / "
+        else:
+            unic_50.append(s)
+            cur_freq_group=cur_freq
+            s=str(cur_freq_group)+" / "+sort_df_word_freq.iloc[i,1]+" / "
+            #st.info(str(i+1)+" - "+sort_df_word_freq.iloc[i,1]+" - "+str(cur_freq))
+                           
+    ws1.write(len(sort_df_word_freq)+2, 4, str(sum_all_words_freq), style2)
+        
+    ws2.write(0, 0, "Список сообщений", style2)
+    for i in range(len(cl_mas_data)):
+        ws2.write(i+1, 0, str(i+1), style0)			
+        ws2.write(i+1, 1, cl_mas_data[i], style0)
+        
+    ws3.write(0, 0, "Список существительных в сообщениях без удаленных слов", style2)
+    unic_new_words=[] 
+    for i in range(len(all_mes_words)):
+        ws3.write(i+1, 0, str(i+1), style0)
+        j=2
+        for w in all_mes_words[i]:
+            if w not in unic_new_words: 
+                unic_new_words.append(w) 
+            ws3.write(i+1, j, w, style0)
+            j+=1
+	
+    ws4.write(0, 0, "Список уникальных слов после удаления", style2)
+    for i in range(len(unic_new_words)): 
+        ws4.write(i+1, 0, str(i+1), style0)
+        ws4.write(i+1, 1, unic_new_words[i], style0)
+        
+    
+    #st.text(" ----------------------------------------------------------- ")
+    #st.info("Общее количество слов всех сообщений с частотой более 1 - "+str(cnt_long_words))
+    #st.info("Общая частота слов всех сообщений с частотой более 1 - "+str(sum_all_words_freq))
+        
+    if len(del_words)>0:
+        
+        st.text(" ----------------------------------------------------------- ")
+        #st.info("Уникальные удаленные слова всех сообщений, отсортированные по убыванию их частоты - "+str(len(del_words)))
+            
+        sort_delwords=sorted(del_words)
+        lstdel_word_freq=[]
+        for i in range(len(sort_delwords)):
+            wrd=sort_delwords[i]
+            cnt=all_words.count(sort_delwords[i])
+            tmp=[]
+            tmp.append(cnt)
+            tmp.append(wrd)
+            lstdel_word_freq.append(tmp)
+            
+        sum_del_words_freq=0
+        df_delword_freq=pd.DataFrame(lstdel_word_freq)
+        df_delword_freq.columns=["freq", "word"]
+        sort_df_delword_freq=df_delword_freq.sort_values(by='freq', ascending=False)
+        for i in range(len(sort_df_delword_freq)):
+            ws1.write(i+1, 9, str(i+1), style0) 
+            cur_freq=sort_df_delword_freq.iloc[i,0]
+            if cur_freq>0:
+                sum_del_words_freq=sum_del_words_freq+cur_freq
+                ws1.write(i+1, 10, str(cur_freq), style1)
+                ws1.write(i+1, 11, sort_df_delword_freq.iloc[i,1], style0)
+                #st.info(str(i+1)+" - "+sort_df_delword_freq.iloc[i,1]+" - "+str(cur_freq))
+        ws1.write(len(sort_df_delword_freq)+2, 10, str(sum_del_words_freq), style2)
+        #st.text(" ----------------------------------------------------------- ")
+        #st.info("Общee количество (и частота) удаленных слов всех сообщений - "+str(sum_del_words_freq))             
+            	
+    wb.save(corpus_file) 
+    st.warning("Данные корпуса сохранены")
 
 #**************************************************************
 
@@ -842,6 +1030,8 @@ def corpus():
     allmes=[]
     cl_mas_data=[]
     cl_mas_date=[]
+    all_mes_words=[]
+    
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
         flagExcel=False  
@@ -870,9 +1060,9 @@ def corpus():
         #for mes in cl_mas_data:
         #    st.text(mes)
             
-        buf, fig, listp, allmes, sent_words, del_words = start_corpus(cl_mas_data, minf, maxf, code_type)
-        #fig, listp, allmes =start_corpus(filename, minf, maxf)
-        st.session_state.sent_words=sent_words
+        buf, fig, listp, allmes, sent_words, del_words, all_words = start_corpus(cl_mas_data, minf, maxf, code_type)
+        
+        st.session_state.sent_words=sent_words 
         
         #st.text(""+str(len(allmes)))
         if len(allmes)>0:
@@ -886,14 +1076,15 @@ def corpus():
         else:
             st.error("Ошибка! Корпус не создан")
     
-    all_mes_words=[]
-    for i in range(len(allmes)):
-        curmes=[]    
-        for word in allmes[i]:
-            if word not in del_words:
-                curmes.append(word)    
-        all_mes_words.append(curmes)     
-        
+        for i in range(len(allmes)):
+            curmes=[]    
+            for word in allmes[i]:
+                if word not in del_words:
+                    curmes.append(word)    
+            all_mes_words.append(curmes)     
+            
+        save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words)
+            
     st.session_state.file_name=filename
     st.session_state.all_mes_words = all_mes_words
     st.session_state.cl_mas_data=cl_mas_data
@@ -1027,6 +1218,7 @@ def search():
                 if cntmes>=100: delta=(cntmes//10)
                 else: delta=100//cntmes
                 curdelta=0
+                sel_mas_data=[]
                 sel_data=[]
                 dbeg=""
                 dend=""
@@ -1052,6 +1244,7 @@ def search():
                         text_tmp=str(k)+" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) ***** "
                         text_tmp=text_tmp+"                  "+cl_data[i]
                         srch_mes.append(text_tmp)
+                        sel_mas_data.append(cl_data[i]) 
                         sel_data.append(all_mes[i])
                         if k==1: dbeg=str(cl_date[i])
                         dend=str(cl_date[i])
@@ -1109,7 +1302,8 @@ def search():
                                 if k==1: dbeg=str(cl_date[i])
                                 dend=str(cl_date[i])
                                 k+=1
-                    cluster_doc2vec(sel_data)
+                    st.warning("Подождите ...")
+                    cluster_doc2vec(sel_mas_data, sel_data)  
                     
                 text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Список слов (до трех), наиболее контекстно связанных с базовым ключевым словом</p>'
                 text_1 =text_1+'<p style="font-family:sans-serif; color:Red; font-size: 24px;">'+sel_findwords[0]+'</p>'
