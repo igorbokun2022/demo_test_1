@@ -533,17 +533,18 @@ class Prepare(object):
             
             #st.info("**************************************")
             # создание унмкального словаря и подсчет частот слов
-            for mes in all_mes_words:
-                for word in mes:
+            for j in range(len(all_mes_words)):
+                for word in all_mes_words[j]: 
                     if word not in my_dictionary:
                         my_dictionary.append(word)
-            i=0
             for i in range(len(my_dictionary)):
                 word=my_dictionary[i]
                 freq=0
                 for j in range(len(all_mes_words)):
-                    tmes=' '.join(all_mes_words[j])
-                    if word in tmes: freq+=1 
+                    tmp=all_mes_words[j]
+                    freq=freq+tmp.count(word)
+                    #if freq>0: st.text(str(freq))
+                            
                 word_freq.append(freq)
                 if minfreq>freq: minfreq=freq
                 if maxfreq<freq: maxfreq=freq
@@ -576,22 +577,27 @@ class Prepare(object):
             # удление редких и частых слов по фильтру 
             minfreq_filter=10000000
             maxfreq_filter=0  
-            #k=0
+            k1=0
+            k2=0
             #st.info("minf="+str(self.minf)+" / maxf= "+str(self.maxf))
             for i in range(len_dfw):
                 if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
-                    new_freqs.append(sort_fwd[i][0]) 
-                    new_words.append(sort_fwd[i][1])
                     val.append(sort_fwd[i][2])
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
-                    #st.text('добавлено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))
-                    #k+=1
+                            
+            for i in range(len_dfw):
+                if sort_fwd[i][0]>=minfreq_filter and sort_fwd[i][0]<=maxfreq_filter: 
+                    new_freqs.append(sort_fwd[i][0])  
+                    new_words.append(sort_fwd[i][1])
+                    #st.text('оставлено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))
+                    k1+=1
                 else:
                     new_del_words.append(sort_fwd[i][1])
                     #st.text('удалено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))   
-                    #k+=1
-            #st.warning('Число оставшихся и удаленных слов = '+str(k))        
+                    k2+=1    
+                
+            st.warning('Число оставшихся = '+str(k1)+', число удаленных слов = '+str(k2))        
             st.warning('Диапазон частот слов после фильтрации')                                        
             st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter))
             st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))
@@ -714,7 +720,7 @@ class Prepare(object):
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         st.image(buf,60)
         
-        return new_del_words, fig, buf, val
+        return new_del_words, fig, buf, val, sort_fwd
 
 #**********************************************************
         
@@ -739,8 +745,8 @@ class Prepare(object):
                 all_sent_words.append(cur_sent_words)        
             all_mes_words.append(cur_mes_words)    
 
-        new_del_words, fig, buf, val=self.histogramm(all_mes_words)
-        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf, val
+        new_del_words, fig, buf, val,sort_fwd=self.histogramm(all_mes_words)
+        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf, val, sort_fwd
     
     
 #**********************************************************
@@ -827,7 +833,7 @@ def start_corpus(mas_data, minf, maxf, code_type):
     #mas_data = list(df['A'])
             
     prep = Prepare(mas_data, delw, minf, maxf, code_type)
-    all_mes_words, all_sent_words, all_words, curdelw, fig, buf, val = prep.prepare_all()
+    all_mes_words, all_sent_words, all_words, curdelw, fig, buf, val, sort_fwd = prep.prepare_all()
     
     list_posts=[]
     list_posts.append(" *****   Информация о корпусе после удаления редких/частых слов    *****")
@@ -838,9 +844,9 @@ def start_corpus(mas_data, minf, maxf, code_type):
     list_posts.append("Всего осталось слов после фильтрации = "+str(len(all_words)-len(curdelw)))
     list_posts.append("Всего осталось уникальных слов после фильтрации = "+str(len(val)))
                     
-    return buf, fig, list_posts, all_mes_words, all_sent_words, curdelw, all_words 
+    return buf, fig, list_posts, all_mes_words, all_sent_words, curdelw, all_words, sort_fwd 
 
-def save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words):
+def save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words, sort_fwd):
     #**************************************************
     #for w in del_words: st.info(w)
     path='F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1' 
@@ -853,7 +859,8 @@ def save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_word
     ws2 = wb.add_sheet('messages')
     ws3 = wb.add_sheet('new_mes_words')
     ws4 = wb.add_sheet('new_unic_words')	
-	
+    ws5 = wb.add_sheet('sort_fwd')	  
+      
     #установить шрифт и стиль вывода
     # 0-black
     font0 = xlwt.Font()
@@ -948,7 +955,13 @@ def save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_word
     for i in range(len(unic_new_words)): 
         ws4.write(i+1, 0, str(i+1), style0)
         ws4.write(i+1, 1, unic_new_words[i], style0)
-        
+    
+    ws5.write(0, 0, "Список слов, частот, децилей", style2)
+    for i in range(len(sort_fwd)): 
+        ws5.write(i+1, 0, str(i+1), style0)
+        ws5.write(i+1, 1, sort_fwd[i][0], style0)
+        ws5.write(i+1, 2, sort_fwd[i][1], style0)
+        ws5.write(i+1, 3, sort_fwd[i][2], style0)
     
     #st.text(" ----------------------------------------------------------- ")
     #st.info("Общее количество слов всех сообщений с частотой более 1 - "+str(cnt_long_words))
@@ -1060,7 +1073,7 @@ def corpus():
         #for mes in cl_mas_data:
         #    st.text(mes)
             
-        buf, fig, listp, allmes, sent_words, del_words, all_words = start_corpus(cl_mas_data, minf, maxf, code_type)
+        buf, fig, listp, allmes, sent_words, del_words, all_words, sort_fwd = start_corpus(cl_mas_data, minf, maxf, code_type)
         
         st.session_state.sent_words=sent_words 
         
@@ -1083,7 +1096,7 @@ def corpus():
                     curmes.append(word)    
             all_mes_words.append(curmes)     
             
-        save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words)
+        save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words, sort_fwd) 
             
     st.session_state.file_name=filename
     st.session_state.all_mes_words = all_mes_words
