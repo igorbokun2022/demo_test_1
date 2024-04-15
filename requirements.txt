@@ -1,7 +1,7 @@
 streamlit
 pandas
 pymorphy2
-gensim==4.1.2
+
 numpy
 matplotlib
 nltk
@@ -21,3 +21,4 @@ feedparser
 pyLDAvis==3.4.1
 xlwt
 
+gensim==4.1.2

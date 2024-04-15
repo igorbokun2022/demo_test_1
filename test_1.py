@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from pymorphy2 import MorphAnalyzer
-from gensim import models, corpora
+from gensim import models
+from gensim import corpora 
 import numpy as np
 import matplotlib as mplt
 import nltk 
@@ -60,7 +61,7 @@ def check_url(url_feed): #функция получает линк на рсс �
 
 def getDescriptionsDates(url_feed, cntd): #функция для получения описания новости
     
-    max_len_data=50
+    max_len_data=1000
     #----------------------------------
     date_end=datetime.date.today()
     date_beg=date_end-datetime.timedelta(days=int(cntd)) 
