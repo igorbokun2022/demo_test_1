@@ -21,4 +21,5 @@ feedparser
 pyLDAvis==3.4.1
 xlwt
 
+scipy==1.11.0
 gensim==0.13.4
