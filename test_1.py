@@ -1127,7 +1127,7 @@ def corpus():
                     curmes.append(word)    
             all_mes_words.append(curmes)     
             
-        save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words, sort_fwd, old_all_mes_words) 
+        #save_corpus_to_excel(allmes, all_words, del_words, cl_mas_data, all_mes_words, sort_fwd, old_all_mes_words) 
             
     st.session_state.file_name=filename
     st.session_state.all_mes_words = all_mes_words
