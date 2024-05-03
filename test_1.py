@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit.componenets.v1 as components
+import streamlit.components.v1 as components
 import pandas as pd
 from pymorphy2 import MorphAnalyzer
 from gensim import models
