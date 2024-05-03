@@ -52,7 +52,6 @@ morph = MorphAnalyzer()
 flagLocal=False
 cl_mas_data=[]
 
-
 #*****************************************************************
 
 def check_url(url_feed): #функция получает линк на рсс ленту, возвращает        
@@ -315,7 +314,7 @@ class word2vec(object):
         w2v_model = Word2Vec(
         min_count=2,
         window=10,
-        vector_size=50,
+        vector_size=300,
         negative=10,
         alpha=0.03,
         min_alpha=0.0007,
@@ -323,12 +322,8 @@ class word2vec(object):
         sg=1)
 
         w2v_model.build_vocab(texts)
-        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=1000, report_delay=1)
-        p=[]
-        p=w2v_model.wv.most_similar(positive=[base_word])
-        for word in p:
-            st.text(word)
-            st.text(base_word)
+        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=300, report_delay=1)
+                
         self.view_word2vec(w2v_model, base_word,list_words)
         
         
@@ -377,6 +372,8 @@ class LDA(object):
         
         p = pyLDAvis.gensim.prepare(ldamodel, doc_term_mat, dict_tokens)
         html_string = pyLDAvis.prepared_data_to_html(p)
+        #st.warning('***************************************************')
+        #st.warning(html_string)
         
         from streamlit import components
         components.v1.html(html_string, width=1300, height=800, scrolling=True)  
@@ -462,14 +459,14 @@ class LDA(object):
         #***********************************
         
         #***********************************
-        mapsize=(60,80)
+        mapsize=(60,120)
         fig,ax = mplt.pyplot.subplots(figsize=mapsize)
-        mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=20, loc='left')
+        mplt.pyplot.title('Тематический профиль канала - '+str(nm_chan),fontsize=80, loc='left')
         dff = df.drop(columns='word')  
         dff.index=new_words
-        sns.set(font_scale=5)
+        #st.info(dff)
         sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True)
-        #sns.set(font_scale=1)
+      
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())         
@@ -1058,6 +1055,8 @@ except:
 st.sidebar.image(img, width=250)
     
 def corpus():
+    
+    sns.set(font_scale=1)
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
@@ -1135,6 +1134,8 @@ def corpus():
     st.session_state.cl_mas_date=cl_mas_date      
          
 def profil():  
+    
+    sns.set(font_scale=5)
     
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;>Глобальный тематический профиль -  основные слова выбранного канала<, объединенные в группы</p>'
     st.markdown(text_1, unsafe_allow_html=True)
@@ -1220,7 +1221,9 @@ def profil():
         
         
 def search():
-
+    
+    sns.set(font_scale=1)
+    
     text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Локальный тематический профиль - сообщения, содержащие ключевые слова выбранной группы</p>'
     st.markdown(text_2, unsafe_allow_html=True)    
     
