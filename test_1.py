@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.componenets.v1 as components
 import pandas as pd
 from pymorphy2 import MorphAnalyzer
 from gensim import models
@@ -375,8 +376,7 @@ class LDA(object):
         #st.warning('***************************************************')
         #st.warning(html_string)
         
-        from streamlit import components
-        components.v1.html(html_string, width=1300, height=800, scrolling=True)  
+        components.html(html_string, width=1300, height=800, scrolling=True)  
         
         #******************************************************************************************
         lst_frm=[]
