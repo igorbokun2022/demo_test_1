@@ -229,16 +229,20 @@ class word2vec(object):
         self.cods=[]   
         self.wrdcod=[]   
         
-    def tsne_plot(self, model, base_word,list_words):
+    def tsne_plot(self, model, base_word,list_words,new_gr_words):
         labels = []
         tokens = []
         colors=[]
         fontsizes=[]
     
         # Extracting words and their vectors from our trained model 
+        close_words = model.wv.most_similar(base_word)
+        cl_words=[row[0] for row in close_words]
+                
         for word in model.wv.index_to_key:
-            tokens.append(model.wv[word])
-            labels.append(word)
+            wrd_vector = model.wv.word_vec(word)
+            tokens.append(wrd_vector)
+            labels.append(word)  
             if word in list_words:
                 colors.append('blue')
                 fontsizes.append(24) 
@@ -247,8 +251,8 @@ class word2vec(object):
                 fontsizes.append(24)
             else:
                 colors.append('black')
-                fontsizes.append(12)
-    
+                fontsizes.append(16)
+      
         # Train t-SNE 
         tsne_model = TSNE(perplexity=45, n_components=2, init='pca', n_iter=2500, random_state=23)
         new_values = tsne_model.fit_transform(tokens)
@@ -260,8 +264,11 @@ class word2vec(object):
             y.append(value[1])
        
         import matplotlib.pyplot as plt 
-        plt.figure(figsize=(16, 16)) 
+        plt.figure(figsize=(30, 30)) 
         for i in range(len(x)):
+            if labels[i] in cl_words:
+                colors[i]='green'
+                fontsizes[i]=20
             plt.scatter(x[i],y[i])
             plt.annotate(labels[i],
                      xy=(x[i], y[i]),
@@ -271,12 +278,14 @@ class word2vec(object):
                      color=colors[i],  
                      ha='right',
                      va='bottom')
-            plt.xlabel("dimension 1")
-            plt.ylabel("dimension 2")
+            plt.xlabel("X")
+            plt.ylabel("Y")
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         st.image(buf,60)
+        
+        for mes in close_words:  st.info(mes)      
            
          
     def view_word2vec(self,model, word, list_names):
@@ -354,7 +363,7 @@ class word2vec(object):
                   
 
                           
-    def start_word_2_vec(self):
+    def start_word_2_vec(self,new_gr_words):
         nkw=self.nkw
         texts=self.texts
         l=len(nkw)
@@ -385,8 +394,8 @@ class word2vec(object):
         w2v_model.build_vocab(texts)
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=50, report_delay=1)
                 
-        self.view_word2vec(w2v_model, base_word,list_words)
-        self.tsne_plot(w2v_model, base_word,list_words)
+        #self.view_word2vec(w2v_model, base_word,list_words)
+        self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
        
         
 #*****************************************************************
@@ -1392,7 +1401,7 @@ def search():
                 wrd_cods=[]
                 if len(sel_findwords)>=3:
                     w2vec=word2vec(sel_data, sel_findwords, filename)
-                    w2vec.start_word_2_vec()
+                    w2vec.start_word_2_vec(new_gr_words)
                     for wcod in w2vec.wrdcod:
                         wrd_cods.append(wcod)
                                        
