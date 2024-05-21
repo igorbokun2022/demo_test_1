@@ -230,6 +230,7 @@ class word2vec(object):
         self.wrdcod=[]   
         
     def tsne_plot(self, model, base_word,list_words,new_gr_words):
+        sns.set (font_scale=2.0) 
         labels = []
         tokens = []
         colors=[]
@@ -245,13 +246,13 @@ class word2vec(object):
             labels.append(word)  
             if word in list_words:
                 colors.append('blue')
-                fontsizes.append(24) 
+                fontsizes.append(48) 
             elif word==base_word: 
                 colors.append('red')
-                fontsizes.append(24)
+                fontsizes.append(48)
             else:
                 colors.append('black')
-                fontsizes.append(16)
+                fontsizes.append(32)
       
         # Train t-SNE 
         tsne_model = TSNE(perplexity=45, n_components=2, init='pca', n_iter=2500, random_state=23)
@@ -268,7 +269,7 @@ class word2vec(object):
         for i in range(len(x)):
             if labels[i] in cl_words:
                 colors[i]='green'
-                fontsizes[i]=20
+                fontsizes[i]=40
             plt.scatter(x[i],y[i])
             plt.annotate(labels[i],
                      xy=(x[i], y[i]),
@@ -285,7 +286,7 @@ class word2vec(object):
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         st.image(buf,60)
         
-        for mes in close_words:  st.info(mes)      
+        #for mes in close_words:  st.info(mes)      
            
          
     def view_word2vec(self,model, word, list_names):
