@@ -161,7 +161,7 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code=25689 
+    #code=25689 
     cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
@@ -170,15 +170,18 @@ async def work(filename, cnt_days):
     loop=asyncio.new_event_loop()
     
     #*************************************
-    code=st.text_input('Код - ')
+   
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
         st.text("22222222222222222222222222222222222222")
-        #code_callback=st.input_text('Код - ')
         await client.start(phone=phone, code_callback=code_callback)  
     except:
-        st.error("Client create/start Error!")
-        return cl_mas_data, cl_mas_date
+        try:
+            code=st.text_input('Код - ')
+            await client.start(phone=phone, code_callback=code)
+        except:    
+            st.error("Client create/start Error!")
+            return cl_mas_data, cl_mas_date
         
     st.text("33333333333333333333333333333333333333")
     
