@@ -1147,6 +1147,12 @@ def corpus():
     cl_mas_date=[]
     all_mes_words=[]
     
+    if "input_code" not in st.session_state:
+        st.session_state.input_code = ""
+    def input_code_callback():
+        st.session_state.input_code = st.session_state.my_input
+
+    
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
           
@@ -1159,9 +1165,10 @@ def corpus():
             if flagTelegram==True:
                 st.info("Парсинг телеграмм-канала")
                 filename='@kunuzru'
-                code=''
-                while len(code)==0:
-                    code=st.text_input('Код - ')
+                code=st.text_input("Код -", key="my_input",on_change=input_code_callback,args=None)
+                code=st.session_state.input_code
+                st.warning(code)
+                
                 cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days, code)) 
             else:    
                 url=filename  
