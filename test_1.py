@@ -155,7 +155,7 @@ def read_excel():
     cl_mas_date=[]
     return cl_mas_data, cl_mas_date
 
-async def work(filename, cnt_days):
+async def work(filename, cnt_days, code):
     
     api_id = 16387030
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
@@ -173,7 +173,6 @@ async def work(filename, cnt_days):
    
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
-        code=st.text_input('Код - ')
         await client.start(phone=phone, code_callback=code)  
     except:
         st.error("Client create/start Error!")
@@ -1160,7 +1159,8 @@ def corpus():
             if flagTelegram==True:
                 st.info("Парсинг телеграмм-канала")
                 filename='@kunuzru'
-                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days)) 
+                code=st.text_input('Код - ')
+                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days, code)) 
             else:    
                 url=filename  
                 st.info("Парсинг новостной ленты "+url)
