@@ -1159,7 +1159,9 @@ def corpus():
             if flagTelegram==True:
                 st.info("Парсинг телеграмм-канала")
                 filename='@kunuzru'
-                code=st.text_input('Код - ')
+                code=''
+                while len(code)==0:
+                    code=st.text_input('Код - ')
                 cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days, code)) 
             else:    
                 url=filename  
