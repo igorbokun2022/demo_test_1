@@ -161,7 +161,7 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='26975'    
+    code=25689 
     cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
@@ -170,15 +170,17 @@ async def work(filename, cnt_days):
     loop=asyncio.new_event_loop()
     
     #*************************************
+    code=st.text_input('Код - ')
     try:
-        client = TelegramClient(ses_name, api_id, api_hash,loop=loop)
-        # #st.text("22222222222222222222222222222222222222")
-        await client.start(phone=phone, code_callback=code_callback) 
+        client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
+        st.text("22222222222222222222222222222222222222")
+        #code_callback=st.input_text('Код - ')
+        await client.start(phone=phone, code_callback=code_callback)  
     except:
         st.error("Client create/start Error!")
         return cl_mas_data, cl_mas_date
         
-    #st.text("33333333333333333333333333333333333333")
+    st.text("33333333333333333333333333333333333333")
     
     try:
         channel_entity=await client.get_entity(filename)
@@ -187,7 +189,7 @@ async def work(filename, cnt_days):
         return
     try:
         #st.text("channel_entity="+str(channel_entity))
-        #st.text("44444444444444444444444444444444444444")
+        st.text("44444444444444444444444444444444444444")
         messages = await client.get_messages(channel_entity, limit=cnt_mes)
     except:
         st.error("Channel_entity Error!")
@@ -214,7 +216,7 @@ async def work(filename, cnt_days):
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code='26975'
+       code=st.text_input('Код - ') 
        return code
      
 #*****************************************************************
@@ -392,6 +394,7 @@ class word2vec(object):
         sample=6e-5,
         sg=1)
 
+        st.warning("Подождите ...")
         w2v_model.build_vocab(texts)
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=50, report_delay=1)
                 
@@ -1126,6 +1129,9 @@ st.sidebar.image(img, width=250)
     
 def corpus():
     
+    flagExcel=False 
+    flagTelegram=True
+    
     sns.set(font_scale=1)
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
@@ -1147,27 +1153,23 @@ def corpus():
     
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
-        flagExcel=False  
+          
         if flagExcel==True:
             cl_mas_data, cl_mas_date = read_excel()
             st.text("len_cl_mas_data="+str(len(cl_mas_data)))
             st.session_state.cl_mas_data=cl_mas_data
             st.session_state.cl_mas_date=cl_mas_date
         else:
-            #posted_q = deque(maxlen=20)
-            #n_test_chars = 50
-            #httpx_client = httpx.AsyncClient()
-            #cl_mas_data, cl_mas_date=asyncio.run(rss_parser(httpx_client, posted_q, n_test_chars, filename))
+            if flagTelegram==True:
+                st.info("Парсинг телеграмм-канала")
+                filename='@kunuzru'
+                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days)) 
+            else:    
+                url=filename  
+                st.info("Парсинг новостной ленты "+url)
+                cl_mas_data, cl_mas_date = getDescriptionsDates(url, cnt_days) 
             
-            #our_feeds = {'Kommersant': 'https://www.kommersant.ru/RSS/news.xml',
-            #'Lenta.ru': 'https://lenta.ru/rss/',
-            #'Vesti': 'https://www.vesti.ru/vesti.rss'} #пример словаря RSS-лент 
-                       
-            url=filename  
-            st.info("Парсинг новостной ленты "+url)
-            cl_mas_data, cl_mas_date = getDescriptionsDates(url, cnt_days) 
-            
-            if len(cl_mas_data)==0: return
+        if len(cl_mas_data)==0: return
                 
                     
         #for mes in cl_mas_data:
@@ -1185,7 +1187,7 @@ def corpus():
                 st.info(curmes)
             for i in range(0,len(cl_mas_data)):
                 #st.info(str(i+1)) 
-                st.text(str(i+1)+".   /"+cl_mas_date[i]+"/ "+cl_mas_data[i])                
+                st.text(str(i+1)+".   /"+str(cl_mas_date[i])+"/ "+str(cl_mas_data[i]))                
         else:
             st.error("Ошибка! Корпус не создан")
     
@@ -1398,7 +1400,8 @@ def search():
                 #******************************************************************
                 # векторный анализ близости слов к выбранным
                 #******************************************************************
-                #'''
+                #''
+                srch_mes_new=[] 
                 wrd_cods=[]
                 if len(sel_findwords)>=3:
                     w2vec=word2vec(sel_data, sel_findwords, filename)
@@ -1410,7 +1413,7 @@ def search():
                         dbeg=""
                         dend=""
                         k=0
-                        srch_mes_new=[]
+                        
                         for i in range(len(all_mes)):
                             keywrd=list(set(all_mes[i])&set(w2vec.wrds)) 
                             if len(keywrd)>0:
