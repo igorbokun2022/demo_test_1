@@ -172,6 +172,7 @@ async def work(filename, cnt_days):
     loop=asyncio.new_event_loop()
     
     #*************************************
+    st.warning(code_callback())
    
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
@@ -1131,8 +1132,11 @@ def corpus():
     
     flagExcel=False 
     flagTelegram=True
-    
     sns.set(font_scale=1)
+    
+    if "input_code" not in st.session_state:
+        st.session_state.input_code = ""
+    st.session_state.input_code =st.input_text('Код доступа в телеграм - ') 
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
@@ -1150,11 +1154,7 @@ def corpus():
     cl_mas_data=[]
     cl_mas_date=[]
     all_mes_words=[]
-    
-    if "input_code" not in st.session_state:
-        st.session_state.input_code = "23456"
-   
-    
+            
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
           
