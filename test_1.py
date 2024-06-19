@@ -1136,7 +1136,7 @@ def corpus():
     
     if "input_code" not in st.session_state:
         st.session_state.input_code = ""
-    st.session_state.input_code =st.input_text('Код доступа в телеграм - ') 
+    st.session_state.input_code =st.text_input('Код доступа в телеграм - ') 
 
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
