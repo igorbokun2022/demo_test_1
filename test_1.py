@@ -155,7 +155,9 @@ def read_excel():
     cl_mas_date=[]
     return cl_mas_data, cl_mas_date
 
-async def work(filename, cnt_days, code):
+#*****************************************************************
+
+async def work(filename, cnt_days):
     
     api_id = 16387030
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
@@ -173,7 +175,7 @@ async def work(filename, cnt_days, code):
    
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
-        await client.start(phone=phone, code_callback=code)  
+        await client.start(phone=phone, code_callback=code_callback)   
     except:
         st.error("Client create/start Error!")
         return cl_mas_data, cl_mas_date
@@ -208,13 +210,15 @@ async def work(filename, cnt_days, code):
     st.markdown(text_2, unsafe_allow_html=True)
  
     return cl_mas_data, cl_mas_date
-        
+
+#*****************************************************************
+
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code=st.text_input('Код - ') 
+       code=st.session_state.input_code 
        return code
-     
+       
 #*****************************************************************
 
 class word2vec(object):
@@ -1148,10 +1152,8 @@ def corpus():
     all_mes_words=[]
     
     if "input_code" not in st.session_state:
-        st.session_state.input_code = ""
-    def input_code_callback():
-        st.session_state.input_code = st.session_state.my_input
-
+        st.session_state.input_code = "23456"
+   
     
     but_corpus=st.sidebar.button("Создать корпус")
     if but_corpus:
@@ -1165,11 +1167,7 @@ def corpus():
             if flagTelegram==True:
                 st.info("Парсинг телеграмм-канала")
                 filename='@kunuzru'
-                code=st.text_input("Код -", key="my_input",on_change=input_code_callback,args=None)
-                code=st.session_state.input_code
-                st.warning(code)
-                
-                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days, code)) 
+                cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days)) 
             else:    
                 url=filename  
                 st.info("Парсинг новостной ленты "+url)
