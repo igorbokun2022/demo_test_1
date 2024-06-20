@@ -163,7 +163,7 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    #code=25689 
+    code='78661' 
     cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
@@ -172,24 +172,21 @@ async def work(filename, cnt_days):
     loop=asyncio.new_event_loop()
     
     #*************************************
-    client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
-    await client.start(phone=phone, code_callback=code_callback) 
-    '''   
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
         await client.start(phone=phone, code_callback=code_callback)   
     except:
         st.error("Client create/start Error!")
         return cl_mas_data, cl_mas_date
-    '''
+    
     try:
         channel_entity=await client.get_entity(filename)
     except: 
         st.error("Connect Error!")
         return
     try:
-        #st.text("channel_entity="+str(channel_entity))
-        st.text("44444444444444444444444444444444444444")
+        st.text("channel_entity="+str(channel_entity))
+        #st.text("44444444444444444444444444444444444444")
         messages = await client.get_messages(channel_entity, limit=cnt_mes)
     except:
         st.error("Channel_entity Error!")
@@ -217,7 +214,7 @@ async def work(filename, cnt_days):
 
 def code_callback():
    code=st.secrets['code_callback']
-   st.warning(code)
+   #st.warning(code)
    return code
    
    #while True:
