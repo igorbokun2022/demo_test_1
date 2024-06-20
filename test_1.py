@@ -172,14 +172,16 @@ async def work(filename, cnt_days):
     loop=asyncio.new_event_loop()
     
     #*************************************
-       
+    client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
+    await client.start(phone=phone, code_callback=code_callback) 
+    '''   
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
         await client.start(phone=phone, code_callback=code_callback)   
     except:
         st.error("Client create/start Error!")
         return cl_mas_data, cl_mas_date
-    
+    '''
     try:
         channel_entity=await client.get_entity(filename)
     except: 
@@ -215,7 +217,7 @@ async def work(filename, cnt_days):
 
 def code_callback():
    code=st.secrets['code_callback']
-   st.warning(code_callback())
+   st.warning(code)
    return code
    
    #while True:
