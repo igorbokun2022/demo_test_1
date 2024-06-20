@@ -172,11 +172,13 @@ async def work(filename, cnt_days):
     loop=asyncio.new_event_loop()
     
     #*************************************
+    code=st.secrets['code_callback']
     st.warning(code_callback())
+    
    
     try:
         client = TelegramClient(ses_name, api_id, api_hash, loop=loop)
-        await client.start(phone=phone, code_callback=code_callback)   
+        await client.start(phone=phone, code_callback=code)   
     except:
         st.error("Client create/start Error!")
         return cl_mas_data, cl_mas_date
@@ -217,7 +219,7 @@ async def work(filename, cnt_days):
 def code_callback():
    while True:
        #ждем код телеграмме, а потом подставляем его в эту функцию 
-       code=st.session_state.input_code 
+       code=st.secrets['code_callback'] 
        return code
        
 #*****************************************************************
@@ -1133,11 +1135,7 @@ def corpus():
     flagExcel=False 
     flagTelegram=True
     sns.set(font_scale=1)
-    
-    if "input_code" not in st.session_state:
-        st.session_state.input_code = ""
-    st.session_state.input_code =st.sidebar.text_input('Код доступа в телеграм - ') 
-
+   
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
     list_chan=["https://www.kommersant.ru/RSS/news.xml", "https://lenta.ru/rss/","https://www.vesti.ru/vesti.rss"]
