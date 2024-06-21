@@ -1138,10 +1138,11 @@ def corpus():
    
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
-    list_chan=["https://www.kommersant.ru/RSS/news.xml", "https://lenta.ru/rss/","https://www.vesti.ru/vesti.rss"]
+    #list_chan=["https://www.kommersant.ru/RSS/news.xml", "https://lenta.ru/rss/","https://www.vesti.ru/vesti.rss"]
+    list_chan=["@kunuzru", "@gazetauz","@podrobnouz"]
     filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
     
-    cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=2)
+    cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
     code_type = st.sidebar.selectbox("Выберите тип кодирования частоты слов",["абсолютная частота","относительная частота"],index=0)
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
     max_tfidf = st.sidebar.selectbox("Выберите макс. уровень частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
@@ -1164,7 +1165,6 @@ def corpus():
         else:
             if flagTelegram==True:
                 st.info("Парсинг телеграмм-канала")
-                filename='@kunuzru'
                 cl_mas_data, cl_mas_date = asyncio.run(work(filename, cnt_days)) 
             else:    
                 url=filename  
@@ -1405,7 +1405,7 @@ def search():
                 #''
                 srch_mes_new=[] 
                 wrd_cods=[]
-                if len(sel_findwords)>=3:
+                if len(sel_findwords)>0:
                     w2vec=word2vec(sel_data, sel_findwords, filename)
                     w2vec.start_word_2_vec(new_gr_words)
                     for wcod in w2vec.wrdcod:
@@ -1426,13 +1426,17 @@ def search():
                                 k+=1
                     st.warning("Подождите ...")
                     cluster_doc2vec(sel_mas_data, sel_data)  
+                
+                if len(wrd_cods)==0: return
                     
                 text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Список слов (до трех), наиболее контекстно связанных с базовым ключевым словом</p>'
                 text_1 =text_1+'<p style="font-family:sans-serif; color:Red; font-size: 24px;">'+sel_findwords[0]+'</p>'
                 st.markdown(text_1, unsafe_allow_html=True)
                 for wcod in wrd_cods:
                     st.info(wcod)
-                                        
+                
+                if len(srch_mes_new)==0: return
+                        
                 text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Дополнительно отобранные сообщения, контекстно связанные с заданными ключевыми словами </p>'
                 st.markdown(text_2, unsafe_allow_html=True)
                 k=1
