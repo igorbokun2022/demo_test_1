@@ -643,18 +643,17 @@ class Prepare(object):
             dfw = dfw.sort_values(by='freqs')
             dfw['Decile'] = pd.cut(dfw['freqs'], 10, labels= False)
             len_dfw=len(dfw['Decile'])
-            #st.info(str(len_dfw)) 
+            st.info(str(len_dfw)) 
                                    
             sort_fwd=dfw.values.tolist()
-            #st.info(sort_fwd) 
+            st.info(sort_fwd) 
                         
-            #st.info("***********  word_decile 0.0 - 1.0  ***************************")
+            st.info("***********  word_decile 0.0 - 1.0  ***************************")
             # нормализация к диапазону 0.0 - 1.0 
             for i in range(len_dfw):   
                 sort_fwd[i][2]=sort_fwd[i][2]/10
-                #st.text(str(sort_fwd[i][1]+" / "+str(sort_fwd[i][0])+" / "+str(sort_fwd[i][2]))) 
+                st.text(str(sort_fwd[i][1]+" / "+str(sort_fwd[i][0])+" / "+str(sort_fwd[i][2]))) 
                                    
-            #st.info(sort_decile)
             #st.info("********** filter decile/words ****************************")   
             # удление редких и частых слов по фильтру 
             minfreq_filter=10000000
@@ -1139,7 +1138,7 @@ def corpus():
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
     #list_chan=["https://www.kommersant.ru/RSS/news.xml", "https://lenta.ru/rss/","https://www.vesti.ru/vesti.rss"]
-    list_chan=["@kunuzru", "@gazetauz","@podrobnouz"]
+    list_chan=["@kunuzru", "@gazetauz","@podrobno"]
     filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
