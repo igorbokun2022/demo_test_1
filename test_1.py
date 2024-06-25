@@ -652,7 +652,7 @@ class Prepare(object):
             # нормализация к диапазону 0.0 - 1.0 
             for i in range(len_dfw):   
                 sort_fwd[i][2]=sort_fwd[i][2]/10
-                if sort_fwd[i][2]>5.0:
+                if sort_fwd[i][2]>0.5:
                     st.text(str(sort_fwd[i][1]+" / частота = "+str(sort_fwd[i][0])+" / дециль = "+str(sort_fwd[i][2]))) 
                                     
             #st.info("********** filter decile/words ****************************")   
