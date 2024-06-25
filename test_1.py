@@ -645,10 +645,10 @@ class Prepare(object):
             len_dfw=len(dfw['Decile'])
             #st.info(str(len_dfw)) 
                                    
-            #sort_fwd=dfw.values.tolist()
+            sort_fwd=dfw.values.tolist()
             #st.info(sort_fwd) 
                         
-            st.info("***********  word_decile 0.0 - 1.0  ***************************")
+            #st.info("***********  word_decile 0.0 - 1.0  ***************************")
             # нормализация к диапазону 0.0 - 1.0 
             for i in range(len_dfw):   
                 sort_fwd[i][2]=sort_fwd[i][2]/10
