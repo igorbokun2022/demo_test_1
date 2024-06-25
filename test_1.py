@@ -643,10 +643,10 @@ class Prepare(object):
             dfw = dfw.sort_values(by='freqs')
             dfw['Decile'] = pd.cut(dfw['freqs'], 10, labels= False)
             len_dfw=len(dfw['Decile'])
-            st.info(str(len_dfw)) 
+            #st.info(str(len_dfw)) 
                                    
-            sort_fwd=dfw.values.tolist()
-            st.info(sort_fwd) 
+            #sort_fwd=dfw.values.tolist()
+            #st.info(sort_fwd) 
                         
             st.info("***********  word_decile 0.0 - 1.0  ***************************")
             # нормализация к диапазону 0.0 - 1.0 
@@ -666,7 +666,9 @@ class Prepare(object):
                     val.append(sort_fwd[i][2])
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
-                            
+            
+            if minfreq_filter<2: minfreq_filter=2 
+                             
             for i in range(len_dfw):
                 if sort_fwd[i][0]>=minfreq_filter and sort_fwd[i][0]<=maxfreq_filter: 
                     new_freqs.append(sort_fwd[i][0])  
