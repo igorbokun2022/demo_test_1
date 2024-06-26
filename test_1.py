@@ -648,12 +648,19 @@ class Prepare(object):
             sort_fwd=dfw.values.tolist()
             #st.info(sort_fwd) 
                         
-            #st.info("***********  Распределение частот по старшим (>5) децилям  ***************************")
+            st.info("***********  Распределение частот по децилям  ***************************")
             # нормализация к диапазону 0.0 - 1.0 
+            sum_dec=[]
+            for i in range(10):
+                sum_dec.append(0)
             for i in range(len_dfw):   
+                k=sort_fwd[i][2] 
+                sum_dec[k]=sum_dec[k]+sort_fwd[i][0] 
                 sort_fwd[i][2]=sort_fwd[i][2]/10
-                if sort_fwd[i][2]>0.5:
-                    st.text(str(sort_fwd[i][1]+" / частота = "+str(sort_fwd[i][0])+" / дециль = "+str(sort_fwd[i][2]))) 
+                #st.text(str(sort_fwd[i][1]+" / частота = "+str(sort_fwd[i][0])+" / дециль = "+str(sort_fwd[i][2])))
+            for i in range(10):    
+                st.text(" дециль = "+str(i/10)+" / суммарная частота = "+str(sum_dec[i])) 
+                     
                                     
             #st.info("********** filter decile/words ****************************")   
             # удление редких и частых слов по фильтру 
