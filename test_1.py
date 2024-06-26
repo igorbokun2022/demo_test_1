@@ -674,8 +674,7 @@ class Prepare(object):
             #st.info("minf="+str(self.minf)+" / maxf= "+str(self.maxf))
             for i in range(len_dfw):
                 if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
-                    val.append(sort_fwd[i][2])
-                    k=sort_fwd[i][2]*10 
+                    k=int(sort_fwd[i][2]*10) 
                     val[k]=val[k]+sort_fwd[i][0]
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
