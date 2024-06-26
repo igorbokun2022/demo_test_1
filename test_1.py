@@ -674,8 +674,6 @@ class Prepare(object):
             #st.info("minf="+str(self.minf)+" / maxf= "+str(self.maxf))
             for i in range(len_dfw):
                 if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
-                    k=int(sort_fwd[i][2]*10) 
-                    val[k]=val[k]+sort_fwd[i][0]
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
             
@@ -685,6 +683,8 @@ class Prepare(object):
                 if sort_fwd[i][0]>=minfreq_filter and sort_fwd[i][0]<=maxfreq_filter: 
                     new_freqs.append(sort_fwd[i][0])  
                     new_words.append(sort_fwd[i][1])
+                    k=int(sort_fwd[i][2]*10) 
+                    val[k]=val[k]+sort_fwd[i][0]
                     #st.text('оставлено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))
                     k1+=1
                 else:
