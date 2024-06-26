@@ -766,10 +766,12 @@ class Prepare(object):
                     
             #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
             
+            sumval=0
             for i in range(10):    
                 st.text(" дециль = "+str(i/10)+" / суммарная частота = "+str(val[i])) 
-            
-            
+                sumval=sumval+val[i]  
+            for i in range(10):
+                val[i]=val[i]/sumval
             
         #*********************************************************************        
         if self.code_type=="относительная частота":
