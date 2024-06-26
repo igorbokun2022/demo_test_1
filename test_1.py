@@ -631,7 +631,7 @@ class Prepare(object):
                 if minfreq>freq: minfreq=freq
                 if maxfreq<freq: maxfreq=freq
                 
-            st.warning('Исходное распределение слов по частотам до фильтрации')
+            st.warning('Исходная информация о корпусе слов до фильтрации')
             st.info('Минимальная абсолютная частота слов до фильтрации = '+str(minfreq))
             st.info('Максимальная абсолютная частота слов до фильтрации = '+str(maxfreq))
             
@@ -687,10 +687,10 @@ class Prepare(object):
                     new_del_words.append(sort_fwd[i][1])
                     #st.text('удалено слово ='+sort_fwd[i][1]+' с частотой='+str(sort_fwd[i][0]))   
                     k2+=1    
-                
-            st.warning('Число оставшихся = '+str(k1)+', число удаленных слов = '+str(k2))        
-            st.warning('Диапазон частот слов после фильтрации')                                        
-            st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter))
+            
+            st.warning('Информация о корпусе слов после фильтрации')
+            st.info('Число оставшихся слов = '+str(k1)+', число удаленных слов = '+str(k2))        
+            st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter)+" / слова с частотой 1 удалены")
             st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))
             #st.info("**************************************")    
             #**********************************************************
@@ -799,12 +799,12 @@ class Prepare(object):
             st.info('Максимальная относительная частота слов после фильтрации = '+str(maxfreq))     
             st.info("**************************************")
         
-        fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
-        ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-        canvas = mplt.pyplot.get_current_fig_manager().canvas
-        canvas.draw()
-        buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-        st.image(buf,60)
+            fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
+            ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+            canvas = mplt.pyplot.get_current_fig_manager().canvas
+            canvas.draw()
+            buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+            st.image(buf,60)
         
         return new_del_words, fig, buf, val, sort_fwd, corpus
 
