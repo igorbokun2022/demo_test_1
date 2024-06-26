@@ -766,6 +766,9 @@ class Prepare(object):
                     
             #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
             
+            for i in range(10):    
+                st.text(" дециль = "+str(i/10)+" / суммарная частота = "+str(val[i])) 
+            
             
             
         #*********************************************************************        
