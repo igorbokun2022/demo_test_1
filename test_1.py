@@ -808,12 +808,12 @@ class Prepare(object):
             st.info('Максимальная относительная частота слов после фильтрации = '+str(maxfreq))     
             st.info("**************************************")
         
-        fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
-        ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-        canvas = mplt.pyplot.get_current_fig_manager().canvas
-        canvas.draw()
-        buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-        st.image(buf,60)
+            fig, ax = mplt.pyplot.subplots(figsize =(10, 7))
+            ax.hist(val, bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+            canvas = mplt.pyplot.get_current_fig_manager().canvas
+            canvas.draw()
+            buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+            st.image(buf,60)
         
         return new_del_words, fig, buf, val, sort_fwd, corpus
 
