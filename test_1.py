@@ -766,13 +766,12 @@ class Prepare(object):
                     
             #st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile)) 
             
-            sumval=0
-            for i in range(10):    
+            for i in range(10):     
                 st.text(" дециль = "+str(i/10)+" / суммарная частота = "+str(val[i])) 
-                sumval=sumval+val[i]  
-            for i in range(10):
-                val[i]=val[i]/sumval
             
+           
+            unic_words=set(cur_words)  
+           
         #*********************************************************************        
         if self.code_type=="относительная частота":
                       
@@ -815,7 +814,7 @@ class Prepare(object):
             buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
             st.image(buf,60)
         
-        return new_del_words, fig, buf, val, sort_fwd, corpus
+        return new_del_words, fig, buf, val, sort_fwd, corpus, unic_words 
 
 #**********************************************************
         
@@ -840,8 +839,8 @@ class Prepare(object):
                 all_sent_words.append(cur_sent_words)        
             all_mes_words.append(cur_mes_words)    
 
-        new_del_words, fig, buf, val,sort_fwd, corpus=self.histogramm(all_mes_words)
-        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf, val, sort_fwd, corpus
+        new_del_words, fig, buf, val,sort_fwd, corpus, unic_words = self.histogramm(all_mes_words)
+        return all_mes_words, all_sent_words, all_words, new_del_words, fig, buf, val, sort_fwd, corpus, unic_words
     
     
 #**********************************************************
@@ -928,7 +927,7 @@ def start_corpus(mas_data, minf, maxf, code_type):
     #mas_data = list(df['A'])
             
     prep = Prepare(mas_data, delw, minf, maxf, code_type)
-    all_mes_words, all_sent_words, all_words, curdelw, fig, buf, val, sort_fwd, corpus = prep.prepare_all()
+    all_mes_words, all_sent_words, all_words, curdelw, fig, buf, val, sort_fwd, corpus, unic_words = prep.prepare_all()
     
     list_posts=[]
     list_posts.append(" *****   Информация о корпусе после удаления редких/частых слов    *****")
@@ -937,7 +936,7 @@ def start_corpus(mas_data, minf, maxf, code_type):
     list_posts.append("Всего слов = "+str(len(all_words)))
     list_posts.append("Всего удалено слов по фильтру = "+str(len(curdelw)))
     list_posts.append("Всего осталось слов после фильтрации = "+str(len(all_words)-len(curdelw)))
-    list_posts.append("Всего осталось уникальных слов после фильтрации = "+str(len(val)))
+    list_posts.append("Всего осталось уникальных слов после фильтрации = "+str(len(unic_words)))
     
     old_all_mes_words=[]
     if len(corpus)>0:
