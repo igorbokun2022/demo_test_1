@@ -737,6 +737,7 @@ class Prepare(object):
             if minfreq_filter>0.1: cur_freq=minfreq_filter 
             else: cur_freq=1 
             cur_words=[]
+            unic_words=[]
             #for row in dfw.itertuples():
             #    if row.freqs>1:
             #        st.info(str(row.freqs) +"/"+ str(row.words)+"/"+ str(row.Decile))
@@ -751,6 +752,7 @@ class Prepare(object):
                 #st.info(cur_freq)
                 if row.freqs==cur_freq:
                     cur_words.append(row.words)
+                    unic_words.append(row.words)
                     #st.info(cur_words)
                 else:
                     if len(cur_words)>0:
@@ -759,6 +761,7 @@ class Prepare(object):
                     cur_freq=row.freqs
                     cur_words=[]
                     cur_words.append(row.words)
+                    unic_words.append(row.words)
                     
             if i>=len_dfw:    
                 st.info(str(len(cur_words))+' слов с частотой - '+str(cur_freq))
@@ -769,10 +772,7 @@ class Prepare(object):
             for i in range(10):     
                 st.text(" дециль = "+str(i/10)+" / суммарная частота = "+str(val[i])) 
             
-            st.text(cur_words)
-            unic_words=set(cur_words)
-            st.text(unic_words)
-           
+                       
         #*********************************************************************        
         if self.code_type=="относительная частота":
                       
