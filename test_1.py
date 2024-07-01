@@ -769,8 +769,9 @@ class Prepare(object):
             for i in range(10):     
                 st.text(" дециль = "+str(i/10)+" / суммарная частота = "+str(val[i])) 
             
-           
-            unic_words=set(cur_words)  
+            st.text(cur_words)
+            unic_words=set(cur_words)
+            st.text(unic_words)
            
         #*********************************************************************        
         if self.code_type=="относительная частота":
