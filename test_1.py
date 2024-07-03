@@ -398,10 +398,10 @@ class word2vec(object):
         sg=1)
 
         st.warning("Подождите, идет процесс векторизации слов ...")
-        st.text(datetime.time())
+        st.text(datetime.now())
         w2v_model.build_vocab(texts)
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
-        st.text(datetime.time())        
+        st.text(datetime.now())        
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
        
