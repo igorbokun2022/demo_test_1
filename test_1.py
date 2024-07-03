@@ -315,9 +315,13 @@ class word2vec(object):
             word_labels.append(wrd)
             color_list.append('green')
         
+        st.text("Подождите, идет редукция ...")
+        st.text(datetime.datetime.now())
         # t-SNE reduction
         Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca")
             .fit_transform(vectors_words))
+        st.text(datetime.datetime.now())
+        st.text("Редукция завершена")
         
         # Sets everything up to plot
         df = pd.DataFrame({"x": [x for x in Y[:, 0]],
@@ -404,7 +408,8 @@ class word2vec(object):
         st.text(datetime.datetime.now())        
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
-       
+        st.text(datetime.datetime.now())
+        st.text("Векторизация завершена")
         
 #*****************************************************************
 
