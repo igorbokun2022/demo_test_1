@@ -390,17 +390,18 @@ class word2vec(object):
         w2v_model = Word2Vec(
         min_count=2,
         window=10,
-        vector_size=300,
+        vector_size=50,
         negative=10,
         alpha=0.03,
         min_alpha=0.0007,
         sample=6e-5,
         sg=1)
 
-        st.warning("Подождите ...")
+        st.warning("Подождите, идет процесс векторизации слов ...")
+        st.text(datetime.time())
         w2v_model.build_vocab(texts)
-        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=50, report_delay=1)
-                
+        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
+        st.text(datetime.time())        
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
        
