@@ -260,7 +260,7 @@ class word2vec(object):
                 fontsizes.append(32)
       
         # Train t-SNE 
-        tsne_model = TSNE(perplexity=45, n_components=2, init='pca', n_iter=2500, random_state=23)
+        tsne_model = TSNE(perplexity=15, n_components=2, init='pca', n_iter=2500, random_state=0)
         new_values = tsne_model.fit_transform(tokens)
         x = []
         y = []
