@@ -260,7 +260,7 @@ class word2vec(object):
                 fontsizes.append(32)
       
         # Train t-SNE 
-        tsne_model = TSNE(perplexity=15, n_components=2, init='pca', n_iter=2500, random_state=0)
+        tsne_model = TSNE(perplexity=15, n_components=2, init='pca', random_state=0)
         new_values = tsne_model.fit_transform(tokens)
         x = []
         y = []
@@ -402,13 +402,12 @@ class word2vec(object):
         sg=1)
 
         st.warning("Подождите, идет процесс векторизации слов ...")
-        st.text(datetime.datetime.now())
         w2v_model.build_vocab(texts)
+        st.text("Словарь создан - "+datetime.datetime.now())
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
-        st.text(datetime.datetime.now())        
+        st.text("Обучение завершено - "+datetime.datetime.now())        
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
-        st.text(datetime.datetime.now())
         st.text("Векторизация завершена")
         
 #*****************************************************************
