@@ -403,9 +403,9 @@ class word2vec(object):
 
         st.warning("Подождите, идет процесс векторизации слов ...")
         w2v_model.build_vocab(texts)
-        st.text("Словарь создан - "+datetime.datetime.now())
+        st.text("Словарь создан - "+str(datetime.datetime.now()))
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
-        st.text("Обучение завершено - "+datetime.datetime.now())        
+        st.text("Обучение завершено - "+str(datetime.datetime.now()))        
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
         st.text("Векторизация завершена")
