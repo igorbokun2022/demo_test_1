@@ -32,6 +32,7 @@ from sklearn.decomposition import PCA
 import pyLDAvis
 import pyLDAvis.gensim 
 import xlwt  
+import multiprocessing  
 
 cl_mas_data=[]
 cl_mas_date=[]
@@ -370,9 +371,28 @@ class word2vec(object):
             self.wrdcod.append(close_words[i])
             self.wrds.append(close_words[i][0])
             self.cods.append(close_words[i][1])
-                  
+           
+    @st.cache(allow_output_mutation=True)
+    def model_train(texts):
+        cores = multiprocessing.cpu_count() 
+        w2v_model = Word2Vec(
+        min_count=2,
+        window=10,
+        vector_size=50,
+        negative=10,
+        workers=cores-1,
+        alpha=0.03,
+        min_alpha=0.0007,
+        sample=6e-5,
+        sg=1)
 
-                          
+        st.warning("Подождите, идет процесс векторизации слов ...")
+        w2v_model.build_vocab(texts)
+        st.text("Словарь создан - "+str(datetime.datetime.now()))
+        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
+        st.text("Обучение завершено - "+str(datetime.datetime.now()))        
+        return w2v_model 
+                       
     def start_word_2_vec(self,new_gr_words):
         nkw=self.nkw
         texts=self.texts
@@ -390,22 +410,7 @@ class word2vec(object):
         #st.text(base_word)
         #st.text(list_words)
         #st.text("**********************************************************")
-
-        w2v_model = Word2Vec(
-        min_count=2,
-        window=10,
-        vector_size=50,
-        negative=10,
-        alpha=0.03,
-        min_alpha=0.0007,
-        sample=6e-5,
-        sg=1)
-
-        st.warning("Подождите, идет процесс векторизации слов ...")
-        w2v_model.build_vocab(texts)
-        st.text("Словарь создан - "+str(datetime.datetime.now()))
-        w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
-        st.text("Обучение завершено - "+str(datetime.datetime.now()))        
+        w2v_model=self.model_train(texts)  
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
         st.text("Векторизация завершена")
