@@ -372,7 +372,7 @@ class word2vec(object):
             self.wrds.append(close_words[i][0])
             self.cods.append(close_words[i][1])
                                
-    def model_train(texts):
+    def model_train(self,texts):
         cores = multiprocessing.cpu_count() 
         w2v_model = Word2Vec(
         min_count=2,
