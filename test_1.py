@@ -371,8 +371,8 @@ class word2vec(object):
             self.wrdcod.append(close_words[i])
             self.wrds.append(close_words[i][0])
             self.cods.append(close_words[i][1])
-           
-    def model_train(self):
+                               
+    def model_train(texts):
         cores = multiprocessing.cpu_count() 
         w2v_model = Word2Vec(
         min_count=2,
@@ -383,22 +383,18 @@ class word2vec(object):
         alpha=0.03,
         min_alpha=0.0007,
         sample=6e-5,
-        sg=1)
-        texts=self.texts 
+        sg=1) 
         st.warning("Подождите, идет процесс векторизации слов ...")
         w2v_model.build_vocab(texts)
         st.text("Словарь создан - "+str(datetime.datetime.now()))
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
         st.text("Обучение завершено - "+str(datetime.datetime.now()))        
-        return w2v_model 
+        return w2v_model
     
-    @st.cache(allow_output_mutation=True)
-    def load_model(self): 
-        return self.model_train()
-                       
     def start_word_2_vec(self,new_gr_words):
         nkw=self.nkw
         l=len(nkw)
+        texts=self.texts
         #st.text("***********************************************")
           
         if (l<=0): 
@@ -412,11 +408,12 @@ class word2vec(object):
         #st.text(base_word)
         #st.text(list_words)
         #st.text("**********************************************************")
-        w2v_model=self.load_model()  
+     
+        w2v_model=self.model_train(texts)   
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
         st.text("Векторизация завершена")
-        
+            
 #*****************************************************************
 
 class LDA(object):
@@ -1436,6 +1433,7 @@ def search():
                 srch_mes_new=[] 
                 wrd_cods=[]
                 if len(sel_findwords)>0:
+                    model_texts=sel_data 
                     w2vec=word2vec(sel_data, sel_findwords, filename)
                     w2vec.start_word_2_vec(new_gr_words)
                     for wcod in w2vec.wrdcod:
