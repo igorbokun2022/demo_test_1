@@ -259,9 +259,11 @@ class word2vec(object):
             else:
                 colors.append('black')
                 fontsizes.append(32)
-      
-        # Train t-SNE 
+                
+        st.text("Началось сжатие векторов - "+str(datetime.datetime.now()))
         tsne_model = TSNE(perplexity=15, n_components=2, init='pca', random_state=0)
+        
+        st.text("Началась визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
         new_values = tsne_model.fit_transform(tokens)
         x = []
         y = []
