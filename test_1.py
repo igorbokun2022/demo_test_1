@@ -263,8 +263,10 @@ class word2vec(object):
         st.text("Началось сжатие векторов - "+str(datetime.datetime.now()))
         tsne_model = TSNE(perplexity=15, n_components=2, init='pca', random_state=0)
         
-        st.text("Началась визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
+        st.text("Началось вычисление близости слов на плоскости - "+str(datetime.datetime.now()))
         new_values = tsne_model.fit_transform(tokens)
+        
+        st.text("Началась визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
         x = []
         y = []
     
@@ -293,7 +295,7 @@ class word2vec(object):
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         st.image(buf,60)
-        
+        st.text("Завершена визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
         #for mes in close_words:  st.info(mes)      
            
          
