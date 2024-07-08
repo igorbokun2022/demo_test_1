@@ -372,8 +372,7 @@ class word2vec(object):
             self.wrds.append(close_words[i][0])
             self.cods.append(close_words[i][1])
            
-    @st.cache(allow_output_mutation=True)
-    def model_train(texts):
+    def model_train(self,texts):
         cores = multiprocessing.cpu_count() 
         w2v_model = Word2Vec(
         min_count=2,
@@ -392,6 +391,10 @@ class word2vec(object):
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
         st.text("Обучение завершено - "+str(datetime.datetime.now()))        
         return w2v_model 
+    
+    @st.cache(allow_output_mutation=True)
+    def load_model(self,texts):
+        return self.model_train(texts)
                        
     def start_word_2_vec(self,new_gr_words):
         nkw=self.nkw
@@ -410,7 +413,7 @@ class word2vec(object):
         #st.text(base_word)
         #st.text(list_words)
         #st.text("**********************************************************")
-        w2v_model=self.model_train(texts)  
+        w2v_model=self.load_model(texts)  
         #self.view_word2vec(w2v_model, base_word,list_words)
         self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
         st.text("Векторизация завершена")
