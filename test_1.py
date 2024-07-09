@@ -6,6 +6,7 @@ from gensim import models
 from gensim import corpora 
 import numpy as np
 import matplotlib as mplt
+import matplotlib.pyplot as plt 
 import nltk 
 nltk.download('stopwords')
 from nltk.corpus import stopwords
@@ -274,9 +275,9 @@ class word2vec(object):
             x.append(value[0])
             y.append(value[1])
        
-        import matplotlib.pyplot as plt 
         plt.figure(figsize=(30, 30)) 
         for i in range(len(x)):
+            st.sidebar.text(str(i))
             if labels[i] in cl_words:
                 colors[i]='green'
                 fontsizes[i]=40
