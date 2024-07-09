@@ -415,8 +415,8 @@ class word2vec(object):
         #st.text("**********************************************************")
      
         w2v_model=self.model_train(texts)   
-        #self.view_word2vec(w2v_model, base_word,list_words)
-        self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
+        self.view_word2vec(w2v_model, base_word,list_words)
+        #self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
         st.text("Векторизация завершена")
             
 #*****************************************************************
