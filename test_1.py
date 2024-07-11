@@ -303,8 +303,10 @@ class word2vec(object):
     def view_word2vec(self,model, word, list_names):
         sns.set (font_scale=1.0) 
         
-              
+        st.warning("Подождите, идет процесс векторизации слов ...")
         vectors_words = [model.wv.word_vec(word)]
+        st.text("Векторизация слов завершена - "+str(datetime.datetime.now()))
+        
         word_labels = [word]
         color_list = ['red']
         close_words = model.wv.most_similar(word)
@@ -321,14 +323,13 @@ class word2vec(object):
             word_labels.append(wrd)
             color_list.append('green')
         
-        st.text("Подождите, идет редукция ...")
-        st.text(datetime.datetime.now())
+        st.text("Подождите, началось сжатие векторов ..."+str(datetime.datetime.now()))
         # t-SNE reduction
-        Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca")
-            .fit_transform(vectors_words))
-        st.text(datetime.datetime.now())
-        st.text("Редукция завершена")
+        Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca")            )
+        st.text("Началось вычисление близости векторов слов на плоскости - "+str(datetime.datetime.now()))
+        Y =Y.fit_transform(vectors_words)
         
+        st.text("Началась визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
         # Sets everything up to plot
         df = pd.DataFrame({"x": [x for x in Y[:, 0]],
                     "y": [y for y in Y[:, 1]],
@@ -366,6 +367,8 @@ class word2vec(object):
         canvas.draw()
         buf = pil.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         st.image(buf,60)
+        st.text("Завершена визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
+        
                
         for mes in close_words: 
             st.info(mes)      
