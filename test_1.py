@@ -303,10 +303,7 @@ class word2vec(object):
     def view_word2vec(self,model, word, list_names):
         sns.set (font_scale=1.0) 
         
-        st.warning("Подождите, идет процесс векторизации слов ...")
         vectors_words = [model.wv.word_vec(word)]
-        st.text("Векторизация слов завершена - "+str(datetime.datetime.now()))
-        
         word_labels = [word]
         color_list = ['red']
         close_words = model.wv.most_similar(word)
@@ -323,10 +320,11 @@ class word2vec(object):
             word_labels.append(wrd)
             color_list.append('green')
         
-        st.text("Подождите, началось сжатие векторов ..."+str(datetime.datetime.now()))
+        st.text("Началось сжатие векторов ..."+str(datetime.datetime.now()))
         # t-SNE reduction
-        Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca")            )
-        st.text("Началось вычисление близости векторов слов на плоскости - "+str(datetime.datetime.now()))
+        Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca"))
+        st.text("Сжатие векторов закончено"+str(datetime.datetime.now()))
+        st.text("Подождите. Началось вычисление близости векторов слов на плоскости ... "+str(datetime.datetime.now()))
         Y =Y.fit_transform(vectors_words)
         
         st.text("Началась визуализация близости слов на плоскости - "+str(datetime.datetime.now()))
@@ -392,11 +390,11 @@ class word2vec(object):
         min_alpha=0.0007,
         sample=6e-5,
         sg=1) 
-        st.warning("Подождите, идет процесс векторизации слов ...")
+        st.warning("Начат процесс векторизации слов ...")
         w2v_model.build_vocab(texts)
         st.text("Словарь создан - "+str(datetime.datetime.now()))
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
-        st.text("Обучение завершено - "+str(datetime.datetime.now()))        
+        st.text("Обучение векторов завершено - "+str(datetime.datetime.now()))        
         return w2v_model
     
     def start_word_2_vec(self,new_gr_words):
