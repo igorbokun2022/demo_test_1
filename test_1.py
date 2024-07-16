@@ -320,10 +320,9 @@ class word2vec(object):
             word_labels.append(wrd)
             color_list.append('green')
         
-        st.text("Началось сжатие векторов ..."+str(datetime.datetime.now()))
         # t-SNE reduction
-        Y = (TSNE(n_components=2, random_state=0, perplexity=15, init="pca"))
-        st.text("Сжатие векторов закончено"+str(datetime.datetime.now()))
+        Y = (TSNE(n_components=2, random_state=0, perplexity=5, init="pca"))
+        st.text("Сжатие векторов завершено "+str(datetime.datetime.now()))
         st.text("Подождите. Началось вычисление близости векторов слов на плоскости ... "+str(datetime.datetime.now()))
         Y =Y.fit_transform(vectors_words)
         
@@ -576,7 +575,7 @@ class LDA(object):
 
 class Prepare(object):    
     
-    def __init__(self, mas, del_words, minf, maxf, code_type):
+    def __init__(self, mas, del_words, minf, maxf, code_type, min_freq):
         #self.stemmer=stemmer 
         self.ru_stopwords = stopwords
         self.morph = morph 
@@ -587,6 +586,7 @@ class Prepare(object):
         self.minf=minf
         self.maxf=maxf
         self.code_type=code_type
+        self.min_freq=min_freq
                         
     def prepareWord(self, old_word):
         new_word=old_word
@@ -692,7 +692,7 @@ class Prepare(object):
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
             
-            if minfreq_filter<2: minfreq_filter=2 
+            if minfreq_filter<self.min_freq: minfreq_filter=self.min_freq  
                              
             for i in range(len_dfw):
                 if sort_fwd[i][0]>=minfreq_filter and sort_fwd[i][0]<=maxfreq_filter: 
@@ -936,13 +936,13 @@ def cluster_doc2vec(sel_mas_data, all_mes_words):
     
 
 
-def start_corpus(mas_data, minf, maxf, code_type):    
+def start_corpus(mas_data, minf, maxf, code_type, min_freq):    
     #start_corpus(file, minf, maxf):   
     #df = pd.read_excel('postnews1.xlsx')
     #df.columns=['A']
     #mas_data = list(df['A'])
             
-    prep = Prepare(mas_data, delw, minf, maxf, code_type)
+    prep = Prepare(mas_data, delw, minf, maxf, code_type, min_freq)
     all_mes_words, all_sent_words, all_words, curdelw, fig, buf, val, sort_fwd, corpus, unic_words = prep.prepare_all()
     
     list_posts=[]
@@ -1176,6 +1176,8 @@ def corpus():
     filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
+    min_freq=st.sidebar.selectbox("Выберите минимальную частоту слов",["1","2","3","4","5","6","7","8","9","10"],index=0)
+    min_freq=int(min_freq)
     code_type = st.sidebar.selectbox("Выберите тип кодирования частоты слов",["абсолютная частота","относительная частота"],index=0)
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
     max_tfidf = st.sidebar.selectbox("Выберите макс. уровень частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
@@ -1210,7 +1212,7 @@ def corpus():
         #for mes in cl_mas_data:
         #    st.text(mes)
             
-        buf, fig, listp, allmes, sent_words, del_words, all_words, sort_fwd, old_all_mes_words = start_corpus(cl_mas_data, minf, maxf, code_type)
+        buf, fig, listp, allmes, sent_words, del_words, all_words, sort_fwd, old_all_mes_words = start_corpus(cl_mas_data, minf, maxf, code_type, min_frerq)
         
         st.session_state.sent_words=sent_words 
         
