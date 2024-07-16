@@ -1212,7 +1212,7 @@ def corpus():
         #for mes in cl_mas_data:
         #    st.text(mes)
             
-        buf, fig, listp, allmes, sent_words, del_words, all_words, sort_fwd, old_all_mes_words = start_corpus(cl_mas_data, minf, maxf, code_type, min_frerq)
+        buf, fig, listp, allmes, sent_words, del_words, all_words, sort_fwd, old_all_mes_words = start_corpus(cl_mas_data, minf, maxf, code_type, min_freq)
         
         st.session_state.sent_words=sent_words 
         
