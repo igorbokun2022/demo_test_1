@@ -461,7 +461,7 @@ class LDA(object):
             alpha='auto',
             per_word_topics=True)
         
-        coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, corpus=doc_term_mat, dictionary=dict_tokens, coherence='c_v')
+        coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, texts=tokens, dictionary=dict_tokens, coherence='c_v')
         coherence_score = coherence_model.get_coherence()   
         st.warning("Оценка текущей модели LDA темы/слова")
         st.warning(coherence_score) 
