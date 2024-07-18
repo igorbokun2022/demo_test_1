@@ -555,7 +555,7 @@ class LDA(object):
         dff = df.drop(columns='word')  
         dff.index=new_words
         #st.info(dff)
-        sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True)
+        sns.heatmap(dff, cmap='Blues_r', linewidths= 5, annot=True, fmt='d')
       
         canvas = mplt.pyplot.get_current_fig_manager().canvas
         canvas.draw()
