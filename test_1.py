@@ -439,7 +439,7 @@ class LDA(object):
         # Создание словаря на основе токенизированных предложений
         dict_tokens = corpora.Dictionary(tokens) 
         #print(dict_tokens)
-        # Создание терм-документной матрицы
+        # Создание терм-документной матрицы (корпуса)
         doc_term_mat = [dict_tokens.doc2bow(token) for token in tokens]
                           
         #*********************************************************************
@@ -460,6 +460,11 @@ class LDA(object):
             chunksize=50,
             alpha='auto',
             per_word_topics=True)
+        
+        coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, corpus=doc_term_mat, dictionary=dict_tokens, coherence='c_v')
+        coherence_score = coherence_model.get_coherence()   
+        st.warning("Оценка текущей модели LDA темы/слова")
+        st.warning(coherence_score) 
         
         p = pyLDAvis.gensim.prepare(ldamodel, doc_term_mat, dict_tokens)
         html_string = pyLDAvis.prepared_data_to_html(p)
