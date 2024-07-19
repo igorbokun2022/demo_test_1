@@ -452,19 +452,35 @@ class LDA(object):
         #******************************************************************************************
         #   pyLDAVis
         #******************************************************************************************
-        ldamodel = models.ldamodel.LdaModel(
-            corpus=doc_term_mat,
-            id2word=dict_tokens,
-            num_topics=num_topics,
-            random_state=0,
-            chunksize=50,
-            alpha='auto',
-            per_word_topics=True)
+        best_num_topics=0
+        best_coherence_score = 0.00 
         
-        coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, texts=tokens, dictionary=dict_tokens, coherence='c_v')
-        coherence_score = coherence_model.get_coherence()   
-        st.warning("Оценка текущей модели LDA темы/слова")
-        st.warning(coherence_score) 
+        for num_topics in range(0,10):
+            ldamodel = models.ldamodel.LdaModel(
+                corpus=doc_term_mat,
+                id2word=dict_tokens,
+                num_topics=num_topics,
+                random_state=0,
+                chunksize=50,
+                alpha='auto',
+                per_word_topics=True)
+        
+            coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, texts=tokens, dictionary=dict_tokens, coherence='c_v')
+            coherence_score = coherence_model.get_coherence()   
+            st.warning("Оценка текущей модели LDA темы/слова, "+str(num_topics)+"/"+str(coherence_score))
+            if coherence_score>best_coherence_score:
+                best_coherence_score=best_coherence_score
+                best_num_topics=num_topics
+        
+        num_topics=best_num_topics
+        ldamodel = models.ldamodel.LdaModel(
+                corpus=doc_term_mat,
+                id2word=dict_tokens,
+                num_topics=num_topics,
+                random_state=0,
+                chunksize=50,
+                alpha='auto',
+                per_word_topics=True)
         
         p = pyLDAvis.gensim.prepare(ldamodel, doc_term_mat, dict_tokens)
         html_string = pyLDAvis.prepared_data_to_html(p)
