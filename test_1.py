@@ -467,12 +467,14 @@ class LDA(object):
         
             coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, texts=tokens, dictionary=dict_tokens, coherence='c_v')
             coherence_score = coherence_model.get_coherence()   
-            st.warning("Оценка текущей модели LDA темы/слова, "+str(num_topics)+"/"+str(coherence_score))
+            st.warning("Оценка текущей модели LDA для , "+str(num_topics)+" тем = "+str(coherence_score))
             if coherence_score>best_coherence_score:
                 best_coherence_score=best_coherence_score
                 best_num_topics=num_topics
         
         num_topics=best_num_topics
+        st.warning("Лучшая модель LDA для , "+str(num_topics)+" тем = "+str(best_coherence_score))
+        
         ldamodel = models.ldamodel.LdaModel(
                 corpus=doc_term_mat,
                 id2word=dict_tokens,
@@ -1266,6 +1268,8 @@ def corpus():
 def profil():  
     
     sns.set(font_scale=5)
+    sel_cntgroup = 10
+    sel_cntwords = 10
     
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;>Глобальный тематический профиль -  основные слова выбранного канала<, объединенные в группы</p>'
     st.markdown(text_1, unsafe_allow_html=True)
@@ -1278,10 +1282,10 @@ def profil():
         st.error("Корпус не создан!")
         return
     
-    sel_cntgroup = st.sidebar.selectbox("Выберите количество тематических групп",["1","2","3","4","5","6","7","8","9","10"],index=9)
-    sel_cntwords = st.sidebar.selectbox("Выберите количество слов в группе",["1","2","3","4","5","6","7","8","9","10"],index=9)
-    sel_cntgroup=int(sel_cntgroup)
-    sel_cntwords=int(sel_cntwords)
+    #sel_cntgroup = st.sidebar.selectbox("Выберите количество тематических групп",["1","2","3","4","5","6","7","8","9","10"],index=9)
+    #sel_cntwords = st.sidebar.selectbox("Выберите количество слов в группе",["1","2","3","4","5","6","7","8","9","10"],index=9)
+    #sel_cntgroup=int(sel_cntgroup)
+    #sel_cntwords=int(sel_cntwords)
         
     but_lda=st.sidebar.button("Создать глобальный профиль")
     if but_lda:             
