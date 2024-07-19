@@ -455,7 +455,7 @@ class LDA(object):
         best_num_topics=0
         best_coherence_score = 0.00 
         
-        for num_topics in range(0,10):
+        for num_topics in range(1,11):
             ldamodel = models.ldamodel.LdaModel(
                 corpus=doc_term_mat,
                 id2word=dict_tokens,
