@@ -469,11 +469,11 @@ class LDA(object):
             coherence_score = coherence_model.get_coherence()   
             st.warning("Оценка текущей модели LDA для , "+str(num_topics)+" тем = "+str(coherence_score))
             if coherence_score>best_coherence_score:
-                best_coherence_score=best_coherence_score
+                best_coherence_score=coherence_score
                 best_num_topics=num_topics
         
+        st.warning("Лучшая модель LDA для "+str(best_num_topics)+" тем = "+str(best_coherence_score))
         num_topics=best_num_topics
-        st.warning("Лучшая модель LDA для , "+str(num_topics)+" тем = "+str(best_coherence_score))
         
         ldamodel = models.ldamodel.LdaModel(
                 corpus=doc_term_mat,
