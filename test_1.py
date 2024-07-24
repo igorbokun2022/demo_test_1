@@ -1390,7 +1390,7 @@ def search():
         old_gr_words=gr_wrd[int(sel_findgroup)]
         for curw in old_gr_words:
             new_gr_words.append(curw)
-        sel_findwords = st.sidebar.multiselect("Выберите слова для поиска в порядке их важности (для анализа связанности - выберите не менее трех слов)",(new_gr_words))
+        sel_findwords = st.sidebar.multiselect("Выберите для локального анализа до трех ключевых слов в порядке их важности",(new_gr_words))
         if sel_findwords:
             but_find=st.sidebar.button("Создать локальный профиль")  
             if but_find:
