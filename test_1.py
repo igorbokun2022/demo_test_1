@@ -429,6 +429,7 @@ class LDA(object):
         self.list_lda=[]
         self.gr_wrd=[]
         self.lda_analysis(num_topics,num_words,input_text,nm_chan)
+        self.num_topics
               
     # Предварительная обработка предложений
     def lda_analysis(self,num_topics,num_words,tokens,nm_chan):
@@ -474,6 +475,7 @@ class LDA(object):
         
         st.warning("Лучшая модель LDA достигается когда количество тем = "+str(best_num_topics)+" при коэффициенте согласия = "+str(best_coherence_score))
         num_topics=best_num_topics
+        self.num_topics=num_topics 
         
         ldamodel = models.ldamodel.LdaModel(
                 corpus=doc_term_mat,
@@ -732,7 +734,7 @@ class Prepare(object):
             
             st.warning('Информация о корпусе слов после фильтрации')
             st.info('Число оставшихся слов = '+str(k1)+', число удаленных слов = '+str(k2))        
-            st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter)+" / слова с частотой 1 удалены")
+            st.info('Минимальная абсолютная частота слов после фильтрации = '+str(minfreq_filter)+" / слова с меньшей частотой удалены")
             st.info('Максимальная абсолютная частота слов после фильтрации = '+str(maxfreq_filter))
             #st.info("**************************************")    
             #**********************************************************
@@ -1328,7 +1330,7 @@ def profil():
         #st.info(sorted_df)
         min_freq=5
                                                 
-        for i in range(sel_cntgroup):
+        for i in range(lda.num_topics):
             st.warning('Тематическая группа - '+str(i))
             for ii in range(sel_cntwords): 
                 st.info(str(ii)+". "+lda.gr_wrd[i][ii])
