@@ -1205,7 +1205,7 @@ def corpus():
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
     min_freq=st.sidebar.selectbox("Выберите минимальную частоту слов",["1","2","3","4","5","6","7","8","9","10"],index=0)
     min_freq=int(min_freq)
-    max_freq=st.sidebar.text_input("Выберите максимальную частоту слов")
+    max_freq=st.sidebar.number_input("Выберите максимальную частоту слов")
     max_freq=int(max_freq)
     
     code_type = st.sidebar.selectbox("Выберите тип кодирования частоты слов",["абсолютная частота","относительная частота"],index=0)
