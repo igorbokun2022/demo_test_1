@@ -1203,10 +1203,11 @@ def corpus():
     filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
     
     cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
-    min_freq=st.sidebar.selectbox("Выберите минимальную частоту слов",["1","2","3","4","5","6","7","8","9","10"],index=0)
+    min_freq=st.sidebar.selectbox("Выберите минимальную частоту слов",["2","3","4","5","6","7","8","9","10"],index=0)
     min_freq=int(min_freq)
-    max_freq=st.sidebar.text_input("Выберите максимальную частоту слов")
-    max_freq=int(max_freq,10) 
+    max_freq=st.sidebar.text_input("Выберите максимальную частоту слов","1000000")
+    max_freq=int(max_freq) 
+    st.sidebar.warning(max_freq)
     
     code_type = st.sidebar.selectbox("Выберите тип кодирования частоты слов",["абсолютная частота","относительная частота"],index=0)
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
