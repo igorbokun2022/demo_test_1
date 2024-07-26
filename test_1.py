@@ -668,7 +668,8 @@ class Prepare(object):
                     freq=freq+tmp.count(word)
                     #if freq>0: st.text(str(freq))
                             
-                word_freq.append(freq)
+                if freq>self.min_freq and freq<self.max_freq: 
+                    word_freq.append(freq)
                 if minfreq>freq: minfreq=freq
                 if maxfreq<freq: maxfreq=freq
                 
@@ -717,10 +718,7 @@ class Prepare(object):
                 if sort_fwd[i][2]>=self.minf and sort_fwd[i][2]<=self.maxf:
                     if minfreq_filter>sort_fwd[i][0]: minfreq_filter=sort_fwd[i][0]
                     if maxfreq_filter<sort_fwd[i][0]: maxfreq_filter=sort_fwd[i][0]
-            
-            if minfreq_filter<self.min_freq: minfreq_filter=self.min_freq
-            if maxfreq_filter>self.max_freq: maxfreq_filter=self.max_freq
-                             
+                                                   
             for i in range(len_dfw):
                 if sort_fwd[i][0]>=minfreq_filter and sort_fwd[i][0]<=maxfreq_filter: 
                     new_freqs.append(sort_fwd[i][0])  
@@ -1207,8 +1205,7 @@ def corpus():
     min_freq=int(min_freq)
     max_freq=st.sidebar.text_input("Выберите максимальную частоту слов","1000000")
     max_freq=int(max_freq) 
-    st.sidebar.warning(max_freq)
-    
+        
     code_type = st.sidebar.selectbox("Выберите тип кодирования частоты слов",["абсолютная частота","относительная частота"],index=0)
     min_tfidf = st.sidebar.selectbox("Выберите мин. уровень частоты слов",["0.0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"],index=0)
     max_tfidf = st.sidebar.selectbox("Выберите макс. уровень частоты слов",["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"],index=9)
