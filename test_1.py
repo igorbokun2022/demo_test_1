@@ -1490,8 +1490,9 @@ def search():
                                 if k==1: dbeg=str(cl_date[i])
                                 dend=str(cl_date[i])
                                 k+=1
-                    st.warning("Подождите ...")
-                    cluster_doc2vec(sel_mas_data, sel_data)  
+                    # кластеризация по 4 кластерам            
+                    #st.warning("Подождите ...")
+                    #cluster_doc2vec(sel_mas_data, sel_data)  
                 
                 if len(wrd_cods)==0: return
                     
