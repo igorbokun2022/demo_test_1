@@ -145,15 +145,15 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, filename):
 def read_excel():
     #*************************************
     try:
-        df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1.xlsx')
+        df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1_base.xlsx')
     except:
-        df = pd.read_excel('postnews1.xlsx')
+        df = pd.read_excel('postnews1_base.xlsx')
     mas_data = list(df.iloc[0:,0])
     cl_mas_data =[]
     for mes in mas_data:
         strmes=str(mes)
         if len(strmes.strip())>0: cl_mas_data.append(strmes) 
-    st.text("принято сообщений канала - "+str(len(cl_mas_data)))
+    st.text("принято строк текста - "+str(len(cl_mas_data)))
     #*************************************
     cl_mas_date=[]
     return cl_mas_data, cl_mas_date
@@ -166,7 +166,7 @@ async def work(filename, cnt_days):
     api_hash = '07bfab67941aa8ebe50f836e3b5c5704'
     ses_name='telemesmonitor'
     phone='+998909790855'
-    code='78661' 
+    code='59540' 
     cnt_mes=1500     
     cdays=int(cnt_days)
     date_end=datetime.date.today()
@@ -216,7 +216,7 @@ async def work(filename, cnt_days):
 #*****************************************************************
 
 def code_callback():
-   code=st.secrets['code_callback']
+   code='59540' #st.secrets['code_callback']
    #st.warning(code)
    return code
    
@@ -454,8 +454,8 @@ class LDA(object):
         #******************************************************************************************
         #   pyLDAVis
         #******************************************************************************************
-        best_num_topics=0
-        best_coherence_score = 0.00 
+        #best_num_topics=0
+        #best_coherence_score = 0.00 
         
         for num_topics in range(1,11):
             ldamodel = models.ldamodel.LdaModel(
@@ -466,16 +466,17 @@ class LDA(object):
                 chunksize=50,
                 alpha='auto',
                 per_word_topics=True)
-        
-            coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, texts=tokens, dictionary=dict_tokens, coherence='c_v')
-            coherence_score = coherence_model.get_coherence()   
+                                
+            #coherence_model = models.coherencemodel.CoherenceModel(model=ldamodel, texts=tokens, dictionary=dict_tokens, coherence='c_v')
+            #coherence_score = coherence_model.get_coherence()   
             #st.warning("Оценка текущей модели LDA для "+str(num_topics)+" тем = "+str(coherence_score))
-            if coherence_score>best_coherence_score:
-                best_coherence_score=coherence_score
-                best_num_topics=num_topics
+            #if coherence_score>best_coherence_score:
+            #    best_coherence_score=coherence_score
+            #    best_num_topics=num_topics
         
-        st.warning("Лучшая модель LDA достигается когда количество тем = "+str(best_num_topics)+" при коэффициенте согласия = "+str(best_coherence_score))
-        num_topics=best_num_topics
+        #best_num_topics=num_topics
+        #st.warning("Лучшая модель LDA достигается когда количество тем = "+str(best_num_topics)+" при коэффициенте согласия = "+str(best_coherence_score))
+        #num_topics=best_num_topics
         self.num_topics=num_topics 
         
         ldamodel = models.ldamodel.LdaModel(
@@ -1182,7 +1183,7 @@ if 'cl_mas_date' not in st.session_state:
     st.session_state.cl_mas_date = []
 
 
-st.header('Web-сервис: тематичеcкий онлайн анализ контента новостных каналов')
+st.header('Web-сервис: тематичеcкий онлайн анализ текста')
 try:
     img=pil.Image.open('photo.jpg')
 except:
@@ -1191,17 +1192,20 @@ st.sidebar.image(img, width=250)
     
 def corpus():
     
-    flagExcel=False 
     flagTelegram=True
     sns.set(font_scale=1)
    
     text_1 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Создание корпуса слов выбранного канала</p>'
     st.markdown(text_1, unsafe_allow_html=True)
     #list_chan=["https://www.kommersant.ru/RSS/news.xml", "https://lenta.ru/rss/","https://www.vesti.ru/vesti.rss"]
-    list_chan=["@kunuzru", "@gazetauz","@podrobno"]
+    list_chan=["@kunuzru", "@gazetauz","@podrobno","current_text"]
     filename = st.sidebar.selectbox("Выберите новостной канал",list_chan)
+    if filename=="current_text":
+        flagExcel=True
+    else:
+        flagExcel=False
+        cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
     
-    cnt_days = st.sidebar.selectbox("Выберите количество дней от текущей даты",["1","2","3","4","5","6","7","8","9","10","20","30"],index=11)
     min_freq=st.sidebar.selectbox("Выберите минимальную частоту слов",["2","3","4","5","6","7","8","9","10"],index=0)
     min_freq=int(min_freq)
     max_freq=st.sidebar.text_input("Выберите максимальную частоту слов","1000000")
@@ -1223,7 +1227,6 @@ def corpus():
           
         if flagExcel==True:
             cl_mas_data, cl_mas_date = read_excel()
-            st.text("len_cl_mas_data="+str(len(cl_mas_data)))
             st.session_state.cl_mas_data=cl_mas_data
             st.session_state.cl_mas_date=cl_mas_date
         else:
@@ -1252,8 +1255,8 @@ def corpus():
             for curmes in listp:
                 st.info(curmes)
             for i in range(0,len(cl_mas_data)):
-                #st.info(str(i+1)) 
-                st.text(str(i+1)+".   /"+str(cl_mas_date[i])+"/ "+str(cl_mas_data[i]))                
+                if flagExcel==False: st.text(str(i+1)+".   /"+str(cl_mas_date[i])+"/ "+str(cl_mas_data[i]))
+                else: st.text(str(i+1)+".   / "+str(cl_mas_data[i]))                
         else:
             st.error("Ошибка! Корпус не создан")
     
@@ -1395,6 +1398,7 @@ def search():
         for curw in old_gr_words:
             new_gr_words.append(curw)
         sel_findwords = st.sidebar.multiselect("Выберите для анализа локального профиля до трех ключевых слов в порядке их важности",(new_gr_words))
+        flag_vector=st.sidebar.checkbox("Нужен анализ близости слов", False) 
         if sel_findwords:
             but_find=st.sidebar.button("Создать локальный профиль")  
             if but_find:
@@ -1428,13 +1432,17 @@ def search():
                     keywrd=list(set(all_mes[i])&set(sel_findwords))
                                            
                     if len(keywrd)>0:
-                        text_tmp=str(k)+" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) ***** "
+                        if filename=="current_text":
+                            text_tmp=str(k)+" ("+str(i)+")  *** (, ".join(keywrd)+" ) ***** "
+                        else:
+                            text_tmp=str(k)+" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) ***** "
+                            if k==1: dbeg=str(cl_date[i])
+                            dend=str(cl_date[i])
                         text_tmp=text_tmp+"                  "+cl_data[i]
                         srch_mes.append(text_tmp)
                         sel_mas_data.append(cl_data[i]) 
                         sel_data.append(all_mes[i])
-                        if k==1: dbeg=str(cl_date[i])
-                        dend=str(cl_date[i])
+                        
                         #st.text("*************")
                         #st.text(keywrd)
                         maxcode=0
@@ -1455,7 +1463,10 @@ def search():
                 #******************************************************************
                 text_2 = '<p style="font-family:sans-serif; color:Blue; font-size: 24px;">Отобранные по ключевым словам сообщения</p>'
                 st.markdown(text_2, unsafe_allow_html=True)
-                text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(cod_mes))+" сообщений"
+                if filename=="current_text":
+                    text_2="Отобрано "+str(len(cod_mes))+" сообщений"
+                else:    
+                    text_2="В диапазоне "+dbeg+" - "+dend+" отобрано "+str(len(cod_mes))+" сообщений"
                 text_2 = '<p style="font-family:sans-serif; color:Black; font-size: 20px;">'+text_2+'</p>'
                 st.markdown(text_2, unsafe_allow_html=True)
                 cod_mes=sorted(cod_mes, key=operator.itemgetter(1), reverse = True)
@@ -1469,6 +1480,8 @@ def search():
                 # векторный анализ близости слов к выбранным
                 #******************************************************************
                 #''
+                if flag_vector==False: return 
+                
                 srch_mes_new=[] 
                 wrd_cods=[]
                 if len(sel_findwords)>0:
