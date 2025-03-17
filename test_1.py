@@ -142,14 +142,16 @@ async def rss_parser(httpx_client, posted_q, n_test_chars, filename):
         
     return(cl_mas_data, cl_mas_date)
 
+#*************************************
 def read_excel():
-    #*************************************
+    
     try:
         df = pd.read_excel('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1_base.xlsx')
     except:
         df = pd.read_excel('postnews1_base.xlsx')
     mas_data = list(df.iloc[0:,0])
     cl_mas_data =[]
+    i=0
     for mes in mas_data:
         strmes=str(mes)
         if len(strmes.strip())>0: cl_mas_data.append(strmes) 
@@ -157,6 +159,26 @@ def read_excel():
     #*************************************
     cl_mas_date=[]
     return cl_mas_data, cl_mas_date
+
+
+#*****************************************************************
+
+def read_txt():
+    
+    try:
+        with open('F:/_Data Sience/Веб_приложения/Streamlit/demo_test_1/postnews1_base.txt', 'r') as file:
+            lines = file.readlines()
+    except:
+        with open('postnews1_base.txt', 'r') as file:
+            lines = file.readlines()
+                
+    for mes in lines:
+        if len(mes.strip())>0: cl_mas_data.append(mes) 
+    st.text("принято строк текста - "+str(len(cl_mas_data)))
+    #*************************************
+    cl_mas_date=[]
+    return cl_mas_data, cl_mas_date
+
 
 #*****************************************************************
 
@@ -390,7 +412,7 @@ class word2vec(object):
         min_alpha=0.0007,
         sample=6e-5,
         sg=1) 
-        st.warning("Начат процесс векторизации слов ...")
+        st.warning("Начат процесс векторизации слов ..."+str(datetime.datetime.now())) 
         w2v_model.build_vocab(texts)
         st.text("Словарь создан - "+str(datetime.datetime.now()))
         w2v_model.train(texts, total_examples=w2v_model.corpus_count, epochs=30, report_delay=1)
@@ -418,7 +440,7 @@ class word2vec(object):
         w2v_model=self.model_train(texts)   
         self.view_word2vec(w2v_model, base_word,list_words)
         #self.tsne_plot(w2v_model, base_word,list_words,new_gr_words)
-        st.text("Векторизация завершена")
+        st.text("Векторизация завершена"+str(datetime.datetime.now()))
             
 #*****************************************************************
 
@@ -1227,6 +1249,7 @@ def corpus():
           
         if flagExcel==True:
             cl_mas_data, cl_mas_date = read_excel()
+            #cl_mas_data, cl_mas_date = read_txt()
             st.session_state.cl_mas_data=cl_mas_data
             st.session_state.cl_mas_date=cl_mas_date
         else:
@@ -1402,13 +1425,13 @@ def search():
         if sel_findwords:
             but_find=st.sidebar.button("Создать локальный профиль")  
             if but_find:
-                progress_bar = st.progress(0)  
+                #progress_bar = st.progress(0)  
                 st.warning("Подождите ...")
                 srch_mes=[]
-                cntmes=len(all_mes)
-                if cntmes>=100: delta=(cntmes//10)
-                else: delta=100//cntmes
-                curdelta=0
+                #cntmes=len(all_mes)
+                #if cntmes>=100: delta=(cntmes//10)
+                #else: delta=100//cntmes
+                #curdelta=0
                 sel_mas_data=[]
                 sel_data=[]
                 dbeg=""
@@ -1416,12 +1439,12 @@ def search():
                 k=1
                 cod_mes=[]
                 for i in range(len(all_mes)):
-                    if i>curdelta:
-                        curdelta+=delta
-                        if curdelta<100: progress_bar.progress(curdelta)
-                        else:
-                           progress_bar.progress(100)
-                           curdelta=1000000
+                    #if i>curdelta:
+                        #curdelta+=delta
+                        #if curdelta<100: progress_bar.progress(curdelta)
+                        #else:
+                           #progress_bar.progress(100)
+                           #curdelta=1000000
                     
                     tmp_sel_findwords=sel_findwords.copy()
                     sel_findwords=[]
@@ -1498,7 +1521,7 @@ def search():
                         
                         for i in range(len(all_mes)):
                             keywrd=list(set(all_mes[i])&set(w2vec.wrds)) 
-                            if len(keywrd)>0:
+                            if len(keywrd)>0 and filename!="current_text":
                                 text_tmp=" ("+str(i)+")  *** "+str(cl_date[i])+" - ("+", ".join(keywrd)+" ) ***** "
                                 srch_mes_new.append(text_tmp+"                  "+cl_data[i])
                                 if k==1: dbeg=str(cl_date[i])
